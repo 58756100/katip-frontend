@@ -14,6 +14,22 @@ export const otpSchema = z.object({
   otpCode: z.string().min(4).max(6),
 });
 
+export const verifyOtpSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().min(4).max(6),
+});
+
+export const resendOtpSchema = z.object({
+  email: z.string().email(),
+});
+
+export const registerSchema = z.object({
+  fullName: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+
 export type EmailFormValues = z.infer<typeof emailSchema>;
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type OtpFormValues = z.infer<typeof otpSchema>;

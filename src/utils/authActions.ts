@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 export async function checkEmailExists(email: string) {
   // Simulate backend check
   const existing = email.includes("@provider.com"); // mock
+  
   return { exists: existing };
 }
 
