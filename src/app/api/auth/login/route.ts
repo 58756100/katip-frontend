@@ -1,91 +1,65 @@
 import { NextResponse } from "next/server";
+import axios from "axios";
 import { loginSchema } from "@/lib/validators/auth";
 
 export async function POST(req: Request) {
   try {
-    // ENV VALIDATION
-    if (!process.env.BACKEND_URL || !process.env.INTERNAL_API_KEY) {
+    if (!process.env.BACKEND_URL || !process.env.NEXT_PUBLIC_INTERNAL_API_KEY) {
+      console.error("❌ Missing BACKEND_URL or INTERNAL_API_KEY");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
       );
     }
 
-    // 1. Parse and validate input
     const rawBody = await req.json();
     const data = loginSchema.parse(rawBody);
 
-    // 2. Forward request to backend safely
-    const backendRes = await fetch(
-      `${process.env.BACKEND_URL}/auth/login`,
+    console.log("🔵 [Next.js Login] Forwarding to backend:", data.email);
+
+    const backendRes = await axios.post(
+      `${process.env.BACKEND_URL}/api/auth/login`,
       {
-        method: "POST",
+        ...data,
+        userAgent: req.headers.get("user-agent"),
+        ip: req.headers.get("x-forwarded-for") || "0.0.0.0",
+      },
+      {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.INTERNAL_API_KEY,
+          "x-api-key": process.env.BACKEND_API_KEY!,
         },
-        body: JSON.stringify({
-          ...data,
-          userAgent: req.headers.get("user-agent"),
-          ip: req.headers.get("x-forwarded-for") || "0.0.0.0",
-        }),
+        withCredentials: true, // 🔥 REQUIRED TO RECEIVE BACKEND COOKIES
+        validateStatus: () => true,
       }
     );
 
-    const backendJson = await backendRes.json();
-
-    // 3. Handle backend errors
-    if (!backendRes.ok) {
+    // Handle backend error
+    if (backendRes.status >= 400) {
+      console.error("🔴 [Next.js Login] Backend Error:", backendRes.data);
       return NextResponse.json(
-        {
-          error: "Invalid email or password",
-        },
+        { error: backendRes.data.error || "Invalid email or password" },
         { status: backendRes.status }
       );
     }
 
-    // 4. Validate backend response structure
-    const { user, accessToken, refreshToken } = backendJson;
+    const { user } = backendRes.data;
 
-    if (
-      typeof accessToken !== "string" ||
-      typeof refreshToken !== "string" ||
-      !user
-    ) {
-      return NextResponse.json(
-        { error: "Invalid authentication response" },
-        { status: 500 }
-      );
+    // Build Next.js response
+    const res = NextResponse.json({ success: true, user });
+
+    // 🔥 Pass through backend cookies to browser
+    const backendCookies = backendRes.headers["set-cookie"];
+    if (backendCookies && Array.isArray(backendCookies)) {
+      backendCookies.forEach((cookie) => {
+        res.headers.append("Set-Cookie", cookie);
+      });
     }
 
-    // 5. Build Next.js response
-    const res = NextResponse.json({
-      success: true,
-      user,
-    });
-
-    // 6. Set SECURE HttpOnly cookies
-    res.cookies.set("access_token", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 15, // 15 min
-    });
-
-    res.cookies.set("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    });
-
+    console.log("🟢 [Next.js Login] Success for:", data.email);
     return res;
-
   } catch (err) {
-    console.error("🔥 Login API Route Error:", err);
-
+    console.error("🔥 [Next.js Login] Route Error:", err);
     return NextResponse.json(
       { error: "Invalid request payload" },
       { status: 400 }

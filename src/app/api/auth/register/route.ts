@@ -1,80 +1,51 @@
 import { NextResponse } from "next/server";
+import axios from "axios";
 import { registerSchema } from "@/lib/validators/auth";
 
 export async function POST(req: Request) {
   try {
-    // 1. ENV validation
-    if (!process.env.BACKEND_URL || !process.env.INTERNAL_API_KEY) {
-      return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 }
-      );
+    if (!process.env.BACKEND_URL || !process.env.NEXT_PUBLIC_INTERNAL_API_KEY) {
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    // 2. Parse & validate request body
     const rawBody = await req.json();
     const data = registerSchema.parse(rawBody);
 
-    // 3. Forward to backend (secure internal call)
-    const backendRes = await fetch(
-      `${process.env.BACKEND_URL}/auth/register`,
+    console.log("[Register API] Payload:", data);
+
+    // Call backend via Axios
+    const backendRes = await axios.post(
+      `${process.env.BACKEND_URL}/api/auth/register`,
       {
-        method: "POST",
+        ...data,
+        userAgent: req.headers.get("user-agent"),
+        ip: req.headers.get("x-forwarded-for") || "0.0.0.0",
+      },
+      {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.INTERNAL_API_KEY!,
+          "x-api-key": process.env.BACKEND_API_KEY,
         },
-        body: JSON.stringify({
-          ...data,
-          // Metadata for backend: device fingerprint
-          userAgent: req.headers.get("user-agent"),
-          ip: req.headers.get("x-forwarded-for") || "0.0.0.0",
-        }),
       }
     );
 
-    const backendJson = await backendRes.json();
+    console.log("[Register API] Backend response:", backendRes.data);
 
-    // 4. Backend error handling (prevent leaking internal messages)
-    if (!backendRes.ok) {
-      return NextResponse.json(
-        {
-          error:
-            backendJson?.error === "EMAIL_ALREADY_EXISTS"
-              ? "An account already exists with this email"
-              : "Unable to create account",
-        },
-        { status: backendRes.status }
-      );
+    const { user, accessToken, refreshToken } = backendRes.data;
+
+    if (!user || !accessToken || !refreshToken) {
+      return NextResponse.json({ error: "Invalid registration response" }, { status: 500 });
     }
 
-    // Backend returns: { user, accessToken, refreshToken }
-    const { user, accessToken, refreshToken } = backendJson;
+    // Set cookies
+    const res = NextResponse.json({ success: true, user });
 
-    if (
-      !user ||
-      typeof accessToken !== "string" ||
-      typeof refreshToken !== "string"
-    ) {
-      return NextResponse.json(
-        { error: "Invalid registration response from server" },
-        { status: 500 }
-      );
-    }
-
-    // 5. Create success response
-    const res = NextResponse.json({
-      success: true,
-      user,
-    });
-
-    // 6. Set auth cookies (automatic login after register)
     res.cookies.set("access_token", accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
       path: "/",
-      maxAge: 60 * 15, // 15 min
+      maxAge: 60 * 15, // 15 minutes
     });
 
     res.cookies.set("refresh_token", refreshToken, {
@@ -86,12 +57,22 @@ export async function POST(req: Request) {
     });
 
     return res;
-  } catch (error) {
-    console.error("REGISTER API ERROR:", error);
+  } catch (error: any) {
+    // Axios errors have response object
+    if (error.response) {
+      console.error("[Register API] Backend error:", error.response.data);
+      const backendError = error.response.data?.error;
+      return NextResponse.json(
+        {
+          error: backendError === "EMAIL_ALREADY_EXISTS"
+            ? "An account already exists with this email"
+            : backendError || "Unable to create account",
+        },
+        { status: error.response.status }
+      );
+    }
 
-    return NextResponse.json(
-      { error: "Invalid registration payload" },
-      { status: 400 }
-    );
+    console.error("[Register API] Unknown error:", error);
+    return NextResponse.json({ error: "Invalid registration payload" }, { status: 400 });
   }
 }
