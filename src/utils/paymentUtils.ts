@@ -54,7 +54,7 @@ interface ApiError {
 function handleApiError(error: unknown, context: string): ApiError {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ message?: string; error?: string }>;
-    
+
     console.error(`❌ [${context}] API Error:`, {
       status: axiosError.response?.status,
       statusText: axiosError.response?.statusText,
@@ -64,17 +64,17 @@ function handleApiError(error: unknown, context: string): ApiError {
     });
 
     return {
-      message: axiosError.response?.data?.message || 
-               axiosError.response?.data?.error || 
-               axiosError.message || 
-               "An unexpected error occurred",
+      message: axiosError.response?.data?.message ||
+        axiosError.response?.data?.error ||
+        axiosError.message ||
+        "An unexpected error occurred",
       code: axiosError.code,
       details: axiosError.response?.data,
     };
   }
 
   console.error(`❌ [${context}] Unexpected Error:`, error);
-  
+
   return {
     message: error instanceof Error ? error.message : "An unexpected error occurred",
     details: error,
@@ -99,7 +99,7 @@ export async function fetchProvider(
 ): Promise<{ data: Provider | null; error: ApiError | null }> {
   try {
     console.log(`🔍 Fetching provider: ${username}`);
-    
+
     const res = await axios.get(`${API_BASE_URL}/api/users/provider/${username}`, {
       headers: {
         "Content-Type": "application/json",
@@ -116,24 +116,24 @@ export async function fetchProvider(
 
     if (res.status === 404) {
       console.warn(`⚠️ Provider not found: ${username}`);
-      return { 
-        data: null, 
-        error: { message: "Provider not found", code: "NOT_FOUND" } 
+      return {
+        data: null,
+        error: { message: "Provider not found", code: "NOT_FOUND" }
       };
     }
 
     console.error(`❌ Failed to fetch provider:`, res.status, res.data);
-    return { 
-      data: null, 
-      error: { 
-        message: res.data?.message || "Failed to fetch provider", 
-        code: `HTTP_${res.status}` 
-      } 
+    return {
+      data: null,
+      error: {
+        message: res.data?.message || "Failed to fetch provider",
+        code: `HTTP_${res.status}`
+      }
     };
   } catch (error) {
-    return { 
-      data: null, 
-      error: handleApiError(error, "fetchProvider") 
+    return {
+      data: null,
+      error: handleApiError(error, "fetchProvider")
     };
   }
 }
@@ -153,6 +153,8 @@ export interface CalculateTipResponse {
   processingFee: number;
   total: number;
   currency: string;
+  totalFees?: number;
+  customerPays?: number;
 }
 
 export async function calculateTipWithFees(
@@ -160,7 +162,7 @@ export async function calculateTipWithFees(
 ): Promise<{ data: CalculateTipResponse | null; error: ApiError | null }> {
   try {
     console.log(`💰 Calculating tip fees:`, request);
-    
+
     const res = await axios.post(
       `${API_BASE_URL}/api/payments/calculate/tip`,
       {
@@ -177,12 +179,12 @@ export async function calculateTipWithFees(
     );
 
     console.log(`✅ Tip calculation successful:`, res.data);
-    
-    return { data: res.data, error: null };
+
+    return { data: res.data.data, error: null };
   } catch (error) {
-    return { 
-      data: null, 
-      error: handleApiError(error, "calculateTipWithFees") 
+    return {
+      data: null,
+      error: handleApiError(error, "calculateTipWithFees")
     };
   }
 }
@@ -214,7 +216,7 @@ export async function processWalletPayment(
       amount: request.amount,
       currency: request.currency,
     });
-    
+
     const res = await axios.post(
       `${API_BASE_URL}/api/payments/wallet/tip`,
       request,
@@ -228,12 +230,12 @@ export async function processWalletPayment(
     );
 
     console.log(`✅ Wallet payment successful:`, res.data);
-    
+
     return { data: res.data, error: null };
   } catch (error) {
-    return { 
-      data: null, 
-      error: handleApiError(error, "processWalletPayment") 
+    return {
+      data: null,
+      error: handleApiError(error, "processWalletPayment")
     };
   }
 }
@@ -260,15 +262,15 @@ export async function initiatePesapalPayment({
   recipientUsername,
   amount,
   currency,
-  coverFees,
+  customerPaysFees,
 }: {
   recipientUsername: string;
   amount: number;
   currency: string;
-  coverFees: boolean;
+  customerPaysFees: boolean;
 }) {
   try {
-    const response = await fetch("/api/payments/pesapal/initiate", {
+    const response = await fetch("/api/tip/pesapal/initiate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -277,7 +279,7 @@ export async function initiatePesapalPayment({
         recipientUsername,
         amount,
         currency,
-        coverFees,
+        customerPaysFees,
       }),
     });
 
@@ -310,7 +312,11 @@ export async function initiatePesapalPayment({
 // Utility Functions
 // ==========================================
 
-export function formatCurrency(amount: number, currency: string = "KES"): string {
+export function formatCurrency(amount: number | null | undefined, currency: string = "KES"): string {
+  if (amount == null || isNaN(amount)) {
+    return "-"; // Or "0.00", whatever makes sense
+  }
+
   const currencyMap: Record<string, { locale: string; currency: string }> = {
     KES: { locale: "en-KE", currency: "KES" },
     USD: { locale: "en-US", currency: "USD" },
@@ -326,6 +332,7 @@ export function formatCurrency(amount: number, currency: string = "KES"): string
     maximumFractionDigits: 2,
   });
 }
+
 
 export function getCurrencySymbol(currency: string): string {
   const symbols: Record<string, string> = {

@@ -1,7 +1,14 @@
 // contexts/TipPaymentContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { calculateTipWithFees } from "@/utils/paymentUtils";
 
 interface TipPaymentContextValue {
@@ -26,7 +33,9 @@ interface TipPaymentContextValue {
   recalculateFees: () => Promise<void>;
 }
 
-const TipPaymentContext = createContext<TipPaymentContextValue | undefined>(undefined);
+const TipPaymentContext = createContext<TipPaymentContextValue | undefined>(
+  undefined
+);
 
 interface TipPaymentProviderProps {
   children: React.ReactNode;
@@ -97,16 +106,30 @@ export function TipPaymentProvider({
       if (apiError) {
         console.warn("⚠️ Fee calculation error:", apiError.message);
         setError(apiError.message);
-        
+
+        // fallback fee
         const fallbackFee = Math.round(displayAmount * 0.034 * 100) / 100;
         setProcessingFee(fallbackFee);
         setTotalToPay(displayAmount + fallbackFee);
-        console.log("📊 Using fallback fees:", { fallbackFee, total: displayAmount + fallbackFee });
+        console.log("📊 Using fallback fees:", {
+          fallbackFee,
+          total: displayAmount + fallbackFee,
+        });
       } else if (data) {
-        setProcessingFee(data.processingFee);
-        setTotalToPay(data.total);
+        // Map API response to your state
+        const processing = Number((data as any)?.totalFees ?? 0);
+        const total = Number(
+          (data as any)?.customerPays ?? displayAmount + processing
+        );
+
+        setProcessingFee(processing);
+        setTotalToPay(total);
         setError(null);
-        console.log("✅ Fees calculated:", { processingFee: data.processingFee, total: data.total });
+
+        console.log("✅ Fees calculated:", {
+          processingFee: processing,
+          total: total,
+        });
       }
     } catch (err) {
       if (currentCalculation !== calculationRef.current) {
@@ -115,7 +138,7 @@ export function TipPaymentProvider({
 
       console.error("💥 Unexpected error in fee calculation:", err);
       setError("Failed to calculate fees");
-      
+
       const fallbackFee = Math.round(displayAmount * 0.034 * 100) / 100;
       setProcessingFee(fallbackFee);
       setTotalToPay(displayAmount + fallbackFee);
@@ -196,10 +219,10 @@ export function TipPaymentProvider({
 // Custom hook to use the context
 export function useTipPayment() {
   const context = useContext(TipPaymentContext);
-  
+
   if (context === undefined) {
     throw new Error("useTipPayment must be used within a TipPaymentProvider");
   }
-  
+
   return context;
 }
