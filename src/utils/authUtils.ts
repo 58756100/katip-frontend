@@ -110,7 +110,7 @@ export async function verifyOtp(email: string, otp: string) {
 // REGISTER WITH PASSWORD
 // -------------------------------------------------------------
 export async function registerWithPassword(email: string, password: string) {
-  passwordSchema.parse({ password });
+  //passwordSchema.parse({ password });
   const tag = "registerWithPassword";
 
   try {
@@ -124,6 +124,7 @@ export async function registerWithPassword(email: string, password: string) {
           "Content-Type": "application/json",
           "x-api-key": process.env.NEXT_PUBLIC_INTERNAL_API_KEY!,
         },
+         withCredentials: true,
       }
     );
 

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { submitBecomeProvider } from "@/utils/becomeProviderUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 export default function BecomeProvider() {
   const [fullName, setFullName] = useState("");
@@ -24,11 +25,19 @@ export default function BecomeProvider() {
 
   const roles = ["Waiter", "DJ", "Barber", "Bouncer", "Other"];
 
+  const resetForm = () => {
+    setFullName("");
+    setBrandName("");
+    setBio("");
+    setRole("");
+    setAvatar(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName || !role) {
-      alert("Please fill in required fields.");
+      toast.error("Please fill in required fields.");
       return;
     }
 
@@ -41,18 +50,16 @@ export default function BecomeProvider() {
         bio,
       };
 
-      console.log("Submitting provider payload:", payload);
-
       const response = await submitBecomeProvider(payload);
 
       console.log("Become Provider Success:", response);
-      alert("You are now a provider!");
 
-      // Optionally: redirect to dashboard
-      // router.push("/dashboard");
+      toast.success("You are now a provider!");
+      resetForm();
+
     } catch (err: any) {
       console.error("BecomeProvider form submit ERROR:", err);
-      alert(err.message || "Failed to submit form.");
+      toast.error(err.message || "Failed to submit form.");
     } finally {
       setLoading(false);
     }
@@ -106,7 +113,7 @@ export default function BecomeProvider() {
             </div>
           </div>
 
-          {/* Avatar Preview (not uploading yet) */}
+          {/* Avatar Preview */}
           <div className="space-y-2">
             <Label>Profile Picture</Label>
             <div className="flex items-center gap-4">

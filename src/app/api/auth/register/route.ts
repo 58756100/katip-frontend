@@ -26,35 +26,28 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
           "x-api-key": process.env.BACKEND_API_KEY,
         },
+         withCredentials: true,
       }
     );
 
     console.log("[Register API] Backend response:", backendRes.data);
 
-    const { user, accessToken, refreshToken } = backendRes.data;
+    const { user, accessToken, refreshToken,success } = backendRes.data;
 
-    if (!user || !accessToken || !refreshToken) {
+    if (!user) {
       return NextResponse.json({ error: "Invalid registration response" }, { status: 500 });
     }
 
     // Set cookies
     const res = NextResponse.json({ success: true, user });
 
-    res.cookies.set("access_token", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 15, // 15 minutes
-    });
-
-    res.cookies.set("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    });
+     // 🔥 Pass through backend cookies to browser
+    const backendCookies = backendRes.headers["set-cookie"];
+    if (backendCookies && Array.isArray(backendCookies)) {
+      backendCookies.forEach((cookie) => {
+        res.headers.append("Set-Cookie", cookie);
+      });
+    }
 
     return res;
   } catch (error: any) {
