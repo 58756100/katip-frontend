@@ -12,10 +12,10 @@ interface SidebarItem {
 }
 
 const items: SidebarItem[] = [
-  { name: "Dashboard", href: "/c/dashboard", icon: <Home className="w-5 h-5" /> },
-  { name: "Wallet", href: "/c/dashboard/wallet", icon: <CreditCard className="w-5 h-5" /> },
-  { name: "Profile", href: "/c/dashboard/profile", icon: <User className="w-5 h-5" /> },
-  { name: "Settings", href: "/c/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
+  { name: "Dashboard", href: "/p/dashboard", icon: <Home className="w-5 h-5" /> },
+  { name: "Wallet", href: "/p/dashboard/wallet", icon: <CreditCard className="w-5 h-5" /> },
+  { name: "Profile", href: "/p/dashboard/profile", icon: <User className="w-5 h-5" /> },
+  { name: "Settings", href: "/p/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
 export default function ProviderSidebar() {

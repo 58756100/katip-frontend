@@ -13,9 +13,13 @@ import PesapalPaymentModal from "./PesapalPaymentModal";
 
 interface TipMethodSelectorProps {
   showWalletOption: boolean;
+  username: string;
 }
 
-export default function TipMethodSelector({ showWalletOption }: TipMethodSelectorProps) {
+export default function TipMethodSelector({
+  showWalletOption,
+  username,
+}: TipMethodSelectorProps) {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showPesapalModal, setShowPesapalModal] = useState(false);
@@ -176,13 +180,15 @@ export default function TipMethodSelector({ showWalletOption }: TipMethodSelecto
       </Card>
 
       {/* Modals */}
-      <WalletPaymentModal 
-        open={showWalletModal} 
-        onClose={() => setShowWalletModal(false)} 
+      <WalletPaymentModal
+        open={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+      
       />
-      <PesapalPaymentModal 
-        open={showPesapalModal} 
-        onClose={() => setShowPesapalModal(false)} 
+
+      <PesapalPaymentModal
+        open={showPesapalModal}
+        onClose={() => setShowPesapalModal(false)}
       />
     </>
   );

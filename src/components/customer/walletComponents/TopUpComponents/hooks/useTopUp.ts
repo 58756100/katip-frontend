@@ -10,19 +10,23 @@ export const useTopUp = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [total, setTotal] = useState<number>(0);
   const [fee, setFee] = useState<number>(0);
-  
+
   const [pesapalUrl, setPesapalUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --------------------------
-  // NEXT STEP HANDLER
-  // --------------------------
+  // ----------------------------------------
+  // NEXT BUTTON HANDLER
+  // ----------------------------------------
   const next = async () => {
     if (loading) return;
 
-    // Step 1 → Step 2 (calculate fees via backend)
+    // -------------------------
+    // STEP 1 → STEP 2
+    // -------------------------
     if (step === 1) {
-      if (!amount || Number(amount) <= 0) {
+      const numericAmount = Number(amount);
+
+      if (!numericAmount || numericAmount <= 0) {
         toast.error("Please enter a valid amount");
         return;
       }
@@ -30,15 +34,14 @@ export const useTopUp = () => {
       try {
         setLoading(true);
 
-        // Backend calculates total + fees
-        const result = await calculatePesapalAmount(Number(amount));
+        const result = await calculatePesapalAmount(numericAmount);
 
         if (!result?.success) {
-          throw new Error(result?.message || "Failed to calculate amount");
+          throw new Error(result?.message || "Failed to calculate fees");
         }
 
-        setTotal(result.data.customerPays); // total user pays including fee
-        setFee(result.data.totalFee);        // fee amount
+        setTotal(result.data.customerPays);
+        setFee(result.data.totalFee);
         setStep(2);
       } catch (err: any) {
         toast.error(err.message || "Failed to calculate fees");
@@ -49,30 +52,34 @@ export const useTopUp = () => {
       return;
     }
 
-    // Step 2 → Step 3 (initiate payment)
+    // -------------------------
+    // STEP 2 → STEP 3 (Initiate Payment)
+    // -------------------------
     if (step === 2) {
+      const numericAmount = Number(amount); // ensure it's a number
+
       try {
         setLoading(true);
 
         const response = await initiatePesapalTopup({
-          userId: "692054ebf0b819bfc6a9dd39",
-          amountMinor: Number(total) * 100, // convert to minor units
+          topupAmount: numericAmount,
           currency: "KES",
-          paymentProviderId: "PESAPAL",
-          description: "Wallet top-up for purchasing digital services",
+          method: "PESAPAL",
         });
 
         const redirectUrl = response?.data?.redirectUrl;
 
-        if (!redirectUrl) throw new Error("Payment URL was not returned");
+        if (!redirectUrl) {
+          throw new Error("Payment URL was not returned");
+        }
 
         setPesapalUrl(redirectUrl);
         setStep(3);
       } catch (err: any) {
         toast.error(
           err.response?.data?.message ||
-          err.message ||
-          "Failed to initialize payment"
+            err.message ||
+            "Failed to initiate payment"
         );
       } finally {
         setLoading(false);
@@ -80,9 +87,9 @@ export const useTopUp = () => {
     }
   };
 
-  // --------------------------
+  // ----------------------------------------
   // BACK BUTTON HANDLER
-  // --------------------------
+  // ----------------------------------------
   const goBack = () => {
     if (step === 2) setStep(1);
     if (step === 3) {
@@ -91,9 +98,9 @@ export const useTopUp = () => {
     }
   };
 
-  // --------------------------
+  // ----------------------------------------
   // RESET
-  // --------------------------
+  // ----------------------------------------
   const reset = () => {
     setAmount("");
     setPaymentMethod("pesapal");

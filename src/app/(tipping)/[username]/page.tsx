@@ -40,7 +40,8 @@ export default async function TippingPage(props: TippingPageProps) {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Unable to Load Page</AlertTitle>
             <AlertDescription>
-              {error.message || "An unexpected error occurred. Please try again later."}
+              {error.message ||
+                "An unexpected error occurred. Please try again later."}
             </AlertDescription>
           </Alert>
         </div>
@@ -82,7 +83,10 @@ export default async function TippingPage(props: TippingPageProps) {
 
           <div className="mt-8 space-y-6">
             <TipAmountCard />
-            <TipMethodSelector showWalletOption={isLoggedIn} />
+            <TipMethodSelector
+              showWalletOption={isLoggedIn}
+              username={provider.username}
+            />
           </div>
 
           <TipSuccessModal />

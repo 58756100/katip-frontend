@@ -1,34 +1,65 @@
+// src/app/api/initiate-topup/route.ts
+
 import { NextResponse } from "next/server";
 import axios from "axios";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const payload = await req.json();
 
-    const backendResponse = await axios.post(
-      "http://localhost:5000/api/payments/topup/initiate",
-      body,
+    // 1️⃣ Extract all cookies from request
+    const cookieHeader = req.headers.get("cookie") || "";
+
+    // 2️⃣ Extract accessToken from cookies
+    const accessToken = cookieHeader
+      .split(";")
+      .find((c) => c.trim().startsWith("accessToken="))
+      ?.split("=")[1];
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { message: "Access token missing" },
+        { status: 401 }
+      );
+    }
+
+    // 3️⃣ Backend endpoint
+    const backendUrl = `${process.env.BACKEND_URL}/api/payments/topup/initiate`;
+
+    // 4️⃣ Forward everything to backend
+    const response = await axios.post(
+      backendUrl,
+      payload,
       {
-        withCredentials: true,
         headers: {
           "Content-Type": "application/json",
-          "x-api-key":
-            process.env.KATIP_PRIVATE_API_KEY ??
-            "b1947d194f1d06389bc6cdd5e389da5551c03395e36e53831edd66e199699fc9",
+          cookie: cookieHeader,                // ← forward cookies
+          Authorization: `Bearer ${accessToken}`, // ← REQUIRED
+          "x-api-key": process.env.BACKEND_API_KEY,
         },
+        withCredentials: true,
+        validateStatus: () => true,
       }
     );
 
-    return NextResponse.json(backendResponse.data);
+    if (response.status < 200 || response.status >= 300) {
+      console.error("Topup backend error:", response.data);
+      return NextResponse.json(
+        { message: response.data?.message || "Backend error" },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json(response.data, { status: 200 });
   } catch (error: any) {
-    console.error("PESAPAL INITIATE ERROR:", error.response?.data || error.message);
+    console.error("Topup API ERROR:", error.response?.data || error);
 
     return NextResponse.json(
       {
-        success: false,
-        message: error.response?.data?.message || "Payment initiation failed",
+        message: "Internal server error",
+        details: error.response?.data,
       },
-      { status: error.response?.status || 500 }
+      { status: 500 }
     );
   }
 }

@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const backendResponse = await axios.post(
-      "http://localhost:5000/api/payments/topup/pesapal/calculate-amount",
+      "http://localhost:5000/api/payments/calculate/topup",
       body,
       {
         withCredentials: true,

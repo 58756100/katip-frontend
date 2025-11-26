@@ -22,25 +22,28 @@ export const calculatePesapalAmount = async (amount: number) => {
 // INITIATE PESAPAL TOPUP
 // ----------------------
 export const initiatePesapalTopup = async (payload: {
-  userId: string;
-  amountMinor: number;
-  currency: string;
-  paymentProviderId: string;
-  description: string;
+  topupAmount: number;    // user enters this in normal currency (KES, USD, etc.)
+  currency: string;       // e.g. "KES"
+  method: string;         // e.g. "PESAPAL"
 }) => {
-  const response = await axios.post(
-    "/api/topup/pesapal/initiate",
-    payload,
-    {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  return response.data;
-};
+  try {
+    const response = await axios.post(
+      "/api/topup/pesapal/initiate",
+      payload,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
+    return response.data;
+  } catch (err: any) {
+    console.error("❌ initiatePesapalTopup ERROR:", err?.response?.data || err);
+    throw err;
+  }
+};
 
 
 
