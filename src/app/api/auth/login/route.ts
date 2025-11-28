@@ -34,6 +34,7 @@ export async function POST(req: Request) {
       }
     );
 
+    console.log("login resss",backendRes)
     // Handle backend error
     if (backendRes.status >= 400) {
       console.error("🔴 [Next.js Login] Backend Error:", backendRes.data);
