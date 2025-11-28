@@ -37,6 +37,7 @@ export default function PesapalPaymentModal({
     setCoverFees,
     processingFee,
     totalToPay,
+    note,
     loading: calculatingFees,
     error: feeError,
   } = useTipPayment();
@@ -77,8 +78,10 @@ export default function PesapalPaymentModal({
       const { data, error: apiError } = await initiatePesapalPayment({
         recipientUsername: username,
         amount: displayAmount,
+
         currency,
         customerPaysFees: coverFees,
+        note,
       });
 
       toast.dismiss(loadingToast);
@@ -99,7 +102,6 @@ export default function PesapalPaymentModal({
 
       // 🔥 Instead of redirect → show iframe
       setPaymentUrl(payment.redirectUrl);
-
     } catch (err) {
       console.error("💥 Payment Error:", err);
       setError(err instanceof Error ? err.message : "Unexpected error");

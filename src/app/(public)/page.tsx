@@ -6,6 +6,8 @@ import Pricing from "@/sections/Pricing";
 import TrustedBy from "@/sections/TrustedBy";
 import Testimonials from "@/sections/Testimonials";
 import Footer from "@/sections/Footer";
+import FAQSection from "@/sections/FAQSection";
+import PricingSection from "@/sections/PricingSection";
 
 export default function Home() {
   return (
@@ -13,9 +15,11 @@ export default function Home() {
       <Hero />
       <HowItWorks />
       <WhyPeopleLove />
-      <Pricing />
+      
       <TrustedBy />
       <Testimonials />
+      <PricingSection/>
+      <FAQSection/>
       <Footer />
     </>
   );

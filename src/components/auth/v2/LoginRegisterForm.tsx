@@ -7,6 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { SocialLoginButtons } from "../SocialLoginButtons";
 import type { AuthStep } from "./AuthContainer";
 import { useRouter } from 'next/navigation';
+import Image from "next/image";
+import Logo from "../../../../public/logo.svg";
 
 import {
   checkEmailExists,
@@ -36,7 +38,6 @@ const LoginRegisterForm = ({
   const [showPw, setShowPw] = useState(false);
   const router = useRouter();
 
-  // RESET WHEN USER TYPES A NEW EMAIL
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     setEmailExists(null);
@@ -45,36 +46,28 @@ const LoginRegisterForm = ({
 
   const handleContinue = async () => {
     if (!email) return;
-
     setLoading(true);
     try {
-      // FIRST CLICK → CHECK EMAIL
       if (emailExists === null) {
         const result = await checkEmailExists(email);
         setEmailExists(result.exists);
 
         if (result.exists === false) {
-          // NEW USER → DIRECTLY TO REGISTRATION OTP
           await sendOtp(email);
           setStep("REGISTER_OTP");
           return;
         }
 
         if (result.exists === true) {
-          // EXISTING USER → NOW SHOW PASSWORD FORM
           setStep("PASSWORD_LOGIN");
           return;
         }
       }
 
-      // SECOND CLICK → PROCESS LOGIN
       if (emailExists === true && showPasswordForm) {
         if (!password) return;
-
         await loginWithPassword(email, password);
         router.push("/c/dashboard");
-
-        console.log("Logged in successfully!");
         return;
       }
     } finally {
@@ -85,13 +78,22 @@ const LoginRegisterForm = ({
   return (
     <div className="space-y-6">
       <div className="flex justify-center">
-        <div className="w-12 h-12 bg-primary rounded-full" />
+          <Image src={Logo} alt="Logo" width={100} height={100} />
       </div>
-
-      <SocialLoginButtons />
 
       <h2 className="text-center text-xl font-semibold">Login or Sign Up</h2>
 
+      {/* Social login buttons */}
+      <SocialLoginButtons />
+
+      {/* OR separator */}
+      <div className="flex items-center justify-center gap-3 my-2">
+        <span className="h-px w-12 bg-gray-300" />
+        <span className="text-gray-500 text-sm">OR</span>
+        <span className="h-px w-12 bg-gray-300" />
+      </div>
+
+      {/* Email input */}
       <Input
         placeholder="name@example.com"
         value={email}
@@ -118,11 +120,16 @@ const LoginRegisterForm = ({
         </div>
       )}
 
-      <Button className="w-full" onClick={handleContinue} disabled={loading}>
+      {/* Continue button */}
+      <Button
+        className="w-full bg-[#0B6EF1] hover:bg-[#095ac4] text-white"
+        onClick={handleContinue}
+        disabled={loading}
+      >
         {loading ? "Processing..." : "Continue"}
       </Button>
 
-      {/* Get Login Code (only for existing users AFTER password form appears) */}
+      {/* Get Login Code (existing users) */}
       {emailExists === true && showPasswordForm && (
         <Button
           variant="ghost"

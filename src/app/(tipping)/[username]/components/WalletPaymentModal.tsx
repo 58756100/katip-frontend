@@ -27,7 +27,7 @@ export default function WalletPaymentModal({
   const username = params.username as string;
 
   // ⭐ DIRECT ACCESS FROM CONTEXT
-  const { displayAmount, currency } = useTipPayment();
+  const { displayAmount, currency,note } = useTipPayment();
 
   const [balance, setBalance] = useState<number | null>(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
@@ -85,10 +85,10 @@ export default function WalletPaymentModal({
     try {
       const response = await axios.post(
         "/api/tip/wallet",
-        {recipientUsername:username, amount: numAmount, currency, walletType },
+        {recipientUsername:username, amount: numAmount, currency, walletType,note },
         { withCredentials: true }
       );
-      console.log("ress",response)
+      console.log("ress#",response)
 
       if (!response.data.success) {
         throw new Error(response.data.message || "Payment failed");

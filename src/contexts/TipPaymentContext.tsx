@@ -24,6 +24,8 @@ interface TipPaymentContextValue {
   error: string | null;
   isValid: boolean;
   canProceed: boolean;
+  note: string;
+  setNote: (value: string) => void;
 
   // Actions
   setCurrency: (currency: string) => void;
@@ -53,6 +55,8 @@ export function TipPaymentProvider({
   const [selectedAmount, setSelectedAmountState] = useState<number | null>(
     initialAmount || null
   );
+  const [note, setNote] = useState("");
+
   const [customAmount, setCustomAmountState] = useState<string>("");
   const [coverFees, setCoverFeesState] = useState(false);
   const [processingFee, setProcessingFee] = useState(0);
@@ -202,6 +206,8 @@ export function TipPaymentProvider({
     error,
     isValid,
     canProceed,
+    note,
+    setNote,
     setCurrency,
     setSelectedAmount,
     setCustomAmount,

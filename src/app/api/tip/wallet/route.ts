@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   try {
     // 1️⃣ Extract body
     const body = await req.json();
-    const { recipientUsername, amount, currency, walletType } = body;
+    const { recipientUsername, amount, currency, walletType,note } = body;
 
     console.log("💼 Wallet → Incoming frontend request:", body);
 
@@ -59,6 +59,7 @@ export async function POST(req: Request) {
         walletType,
         method: "WALLET", // Tell backend this is WALLET tipping
         customerPaysFees: false, // wallet has no fees
+        note,
       },
       {
         headers: {

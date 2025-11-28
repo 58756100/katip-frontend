@@ -200,13 +200,13 @@ export interface WalletPaymentRequest {
   recipientUsername: string;
   amount: number;
   currency: string;
-  message?: string;
+  note?: string;
 }
 
 export interface WalletPaymentResponse {
   success: boolean;
   transactionId: string;
-  message: string;
+  note: string;
 }
 
 export async function processWalletPayment(
@@ -218,6 +218,7 @@ export async function processWalletPayment(
       recipient: request.recipientUsername,
       amount: request.amount,
       currency: request.currency,
+      note:request.note,
     });
 
     const res = await axios.post(
@@ -252,7 +253,7 @@ export interface PesapalPaymentRequest {
   amount: number;
   currency: string;
   coverFees: boolean;
-  message?: string;
+  note?: string;
 }
 
 export interface PesapalPaymentResponse {
@@ -266,11 +267,13 @@ export async function initiatePesapalPayment({
   amount,
   currency,
   customerPaysFees,
+  note,
 }: {
   recipientUsername: string;
   amount: number;
   currency: string;
   customerPaysFees: boolean;
+  note:String;
 }) {
   try {
     const response = await fetch("/api/tip/pesapal/initiate", {
@@ -283,6 +286,7 @@ export async function initiatePesapalPayment({
         amount,
         currency,
         customerPaysFees,
+        note,
       }),
     });
 

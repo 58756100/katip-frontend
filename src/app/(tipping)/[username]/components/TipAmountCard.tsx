@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { DollarSign, Loader2, AlertCircle } from "lucide-react";
-import { useTipPayment } from "@/contexts/TipPaymentContext"; // ✅ FIXED IMPORT
+import { DollarSign, Loader2, AlertCircle, Shield, User } from "lucide-react";
+import { useTipPayment } from "@/contexts/TipPaymentContext";
 import { formatCurrency } from "@/utils/paymentUtils";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import Logo from "../../../../../public/logo.svg";
 
 const PRESET_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
 
@@ -19,6 +22,9 @@ const CURRENCIES = [
 ];
 
 export default function TipAmountCard() {
+  const params = useParams();
+  const recipientUsername = params?.username as string;
+
   const {
     currency,
     setCurrency,
@@ -29,13 +35,15 @@ export default function TipAmountCard() {
     displayAmount,
     error,
     loading,
+    note,
+    setNote,
   } = useTipPayment();
 
   const activeCurrency = CURRENCIES.find((c) => c.code === currency);
 
   const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
+
     // Allow empty string or valid numbers
     if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
       setCustomAmount(value);
@@ -44,14 +52,44 @@ export default function TipAmountCard() {
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-muted/50 border-b">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <DollarSign className="w-5 h-5 text-primary" />
-          Choose Your Tip Amount
-        </CardTitle>
-      </CardHeader>
+      
+        <CardHeader className=" border-b ">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-primary" />
+              Choose Your Tip Amount
+            </CardTitle>
+            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              <Image src={Logo} alt="Logo" width={100} height={100} />
+            </div>
+          </div>
+        </CardHeader>
+      
 
       <CardContent className="p-6 space-y-6">
+        {/* Recipient Confirmation Banner */}
+        <div className=" border border-primary/20 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-medium text-foreground">
+                  Tipping
+                </span>
+                <span className="text-sm font-bold text-primary truncate">
+                  @{recipientUsername || "username"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Shield className="w-3 h-3 text-green-600" />
+                <span>Your contact info stays private & secure</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Currency Selector */}
         <div className="space-y-3">
           <Label className="text-sm font-medium">Currency</Label>
@@ -125,6 +163,27 @@ export default function TipAmountCard() {
           </div>
           <p className="text-xs text-muted-foreground">
             Enter any amount you'd like to tip
+          </p>
+        </div>
+
+        {/* Optional Customer Note */}
+        <div className="space-y-3">
+          <Label htmlFor="customer-note" className="text-sm font-medium">
+            Optional Note (to the provider)
+          </Label>
+          <textarea
+            id="customer-note"
+            placeholder="Say something nice 🤍 (optional)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className={cn(
+              "w-full min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm",
+              "focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            )}
+            disabled={loading}
+          />
+          <p className="text-xs text-muted-foreground">
+            You can leave a short message for the provider (optional)
           </p>
         </div>
 

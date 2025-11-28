@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import {
-  WalletTransaction,
-  fetchWalletTransactions,
-} from "@/utils/transactionUtils";
+  fetchProviderTransactions,
+  ProviderTransaction,
+} from "@/utils/providerTransactionUtils";
 import {
   Table,
   TableBody,
@@ -22,20 +22,20 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  flexRender,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { flexRender } from "@tanstack/react-table";
 
-export const WalletHistoryTable: React.FC = () => {
-  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+export const ProviderWalletTransactions: React.FC = () => {
+  const [transactions, setTransactions] = useState<ProviderTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const data = await fetchWalletTransactions();
-      setTransactions(data);
+      const res = await fetchProviderTransactions();
+      setTransactions(res); // <-- ensure you use res.data (array)
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,10 +47,10 @@ export const WalletHistoryTable: React.FC = () => {
     fetchTransactions();
   }, []);
 
-  // Columns for TanStack Table
-  const columns = useMemo<ColumnDef<WalletTransaction>[]>(
+  const columns = useMemo<ColumnDef<ProviderTransaction>[]>(
     () => [
       { accessorKey: "transactionUID", header: "Transaction ID" },
+      { accessorKey: "payerId", header: "From (Payer)" },
       { accessorKey: "type", header: "Type" },
       {
         accessorKey: "amountMinor",
@@ -82,6 +82,7 @@ export const WalletHistoryTable: React.FC = () => {
       (tx) =>
         tx.transactionUID.includes(search) ||
         tx.type.toLowerCase().includes(search.toLowerCase()) ||
+        (tx.payerId?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
         tx.method.toLowerCase().includes(search.toLowerCase()) ||
         tx.status.toLowerCase().includes(search.toLowerCase())
     );
@@ -94,7 +95,6 @@ export const WalletHistoryTable: React.FC = () => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    debugTable: false,
   });
 
   return (
@@ -113,8 +113,8 @@ export const WalletHistoryTable: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <Table>
+      <div className="overflow-x-auto w-full">
+        <Table className="min-w-[700px]">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -153,7 +153,7 @@ export const WalletHistoryTable: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between space-x-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 sm:space-x-2">
         <Button
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}

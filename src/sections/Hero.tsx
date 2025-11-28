@@ -1,45 +1,70 @@
-// src/sections/Hero.tsx
 "use client";
 
-import { motion } from "framer-motion";
+import Image from "next/image";
 
-export default function Hero() {
+export default function HeroSection() {
   return (
-    <motion.section
-      id="hero"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-10"
-    >
-      <div className="flex-1 space-y-6">
-        <h1 className="text-5xl font-semibold text-gray-900">
-          Scan. Tip. Done.
-        </h1>
-        <p className="text-gray-600 max-w-xl">
-          Ka-Tip lets you support instantly by scanning a QR. Pay with mobile money or card. The recipient gets the gift — the contact details stay private.
-        </p>
-        <div className="flex gap-4">
-          <button className="bg-[#1B66FF] text-white px-6 py-3 rounded-md font-medium hover:bg-blue-600 transition">
-            Get the app
-          </button>
-          <button className="border border-gray-300 px-6 py-3 rounded-md font-medium text-gray-700 hover:border-[#1B66FF] hover:text-[#1B66FF] transition">
-            Create your QR
-          </button>
+    <section className="w-full bg-gray-50 pt-20 pb-24 px-6 md:px-10">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+
+        {/* LEFT SIDE */}
+        <div className="space-y-6">
+          <p className="text-blue-600 font-medium text-sm">
+            Private QR tipping
+          </p>
+
+          <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 leading-tight">
+            Scan. Tip. Done.<br />
+            No phone numbers ever.
+          </h1>
+
+          <p className="text-gray-600 text-lg max-w-md">
+            Ka-Tip lets you tip workers instantly by scanning a QR.
+            Pay with mobile money or card. The recipient gets the
+            tip—your contact details stay private.
+          </p>
+
+          {/* Buttons */}
+          <div className="flex flex-wrap gap-4 pt-2">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-3 px-6 rounded-lg transition">
+              Get the app
+            </button>
+
+            <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-3 px-6 rounded-lg transition">
+              Create your QR
+            </button>
+          </div>
+
+          {/* Under-buttons note */}
+          <p className="text-gray-500 text-sm">
+            Works with Mobile Money and major cards. Fees shown before you pay.
+          </p>
+
+          {/* Feature bullets */}
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600 pt-4">
+            <span>No contact sharing</span>
+            <span className="text-gray-400">•</span>
+            <span>Instant payouts via PSP</span>
+            <span className="text-gray-400">•</span>
+            <span>Tip budget & receipts</span>
+          </div>
         </div>
-        <p className="text-gray-500 text-sm italic">
-          No contact sharing • Instant delivery • Tip securely & privately
-        </p>
+
+        {/* RIGHT SIDE — PHONE MOCKUP */}
+        <div className="flex justify-center md:justify-end">
+          <div className="w-[260px] md:w-[300px]">
+            <Image
+              src="/iphone-mockup.png"  // <-- Replace with your real phone image
+              alt="Ka-Tip App Phone Mockup"
+              width={300}
+              height={600}
+              className="w-full h-auto drop-shadow-xl"
+              priority
+            />
+          </div>
+        </div>
+
       </div>
-      <div className="flex-1">
-        {/* Replace with your iPhone mockup image */}
-        <img
-          src="/images/iphone-mockup.png"
-          alt="Ka-Tip app on phone"
-          className="w-full max-w-md mx-auto"
-        />
-      </div>
-    </motion.section>
+    </section>
   );
 }

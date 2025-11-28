@@ -1,8 +1,21 @@
 import React from 'react'
-
+import WalletCard from '@/components/provider/wallet/WalletCardComponent'
+import QRCodeCard from '@/components/provider/QRcodeComponent'
+import TippingHistory from '@/components/provider/TippingHistoryComponent'
 const page = () => {
   return (
-    <div>provider dashboard</div>
+    <div>
+      
+      <div>
+        <WalletCard/>
+      </div>
+      <div>
+        <QRCodeCard username='waynelagat379'/>
+      </div>
+      <div>
+        <TippingHistory/>
+      </div>
+      </div>
   )
 }
 
