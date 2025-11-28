@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/input-otp";
 import { verifyOtp, sendOtp } from "@/utils/authUtils";
 import { toast } from "sonner";
-import type { AuthStep } from "./AuthContainer";
+import { AuthStep } from "./AuthStep";
+import Image from "next/image";
+import Logo from "../../../../public/logo.svg";
 
 interface Props {
   email: string;
@@ -46,13 +48,13 @@ const RegistrationOtpVerification = ({ email, setStep }: Props) => {
 
       if (res.success) {
         toast.success("Verification successful!");
-        setStep("PASSWORD_SETUP");
+        setStep("CREATE_WALLET_PIN");
       } else {
         toast.error(res.message || "Invalid code");
       }
     } catch (error) {
       toast.error("Invalid or expired otp");
-      console.log(error)
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ const RegistrationOtpVerification = ({ email, setStep }: Props) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-center">
-        <div className="w-12 h-12 bg-primary rounded-full animate-pulse" />
+        <Image src={Logo} alt="Logo" width={100} height={100} />
       </div>
 
       <h1 className="text-xl font-semibold text-center">

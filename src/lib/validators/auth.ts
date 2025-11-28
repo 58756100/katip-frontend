@@ -24,10 +24,21 @@ export const resendOtpSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  //fullName: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6),
+
+  // NEW FIELDS
+  walletPin: z.string().length(4), // 4-digit PIN
+  touchIdEnabled: z.boolean(),
+  kycTier: z.number().min(1).max(3),
+
+  termsAgreement: z.object({
+    terms: z.boolean(),
+    privacy: z.boolean(),
+    kyc: z.boolean(),
+  }),
 });
+
 
 
 export const passwordSchema = z

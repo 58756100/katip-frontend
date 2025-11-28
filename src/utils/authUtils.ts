@@ -107,34 +107,46 @@ export async function verifyOtp(email: string, otp: string) {
 }
 
 // -------------------------------------------------------------
-// REGISTER WITH PASSWORD
+// REGISTER WITH PASSWORD (UPDATED)
 // -------------------------------------------------------------
-export async function registerWithPassword(email: string, password: string) {
-  //passwordSchema.parse({ password });
+export async function registerWithPassword(payload: {
+  email: string;
+  password: string;
+  walletPin: string;
+  touchIdEnabled: boolean;
+  kycTier: number;
+  termsAgreement: {
+    terms: boolean;
+    privacy: boolean;
+    kyc: boolean;
+  };
+}) {
   const tag = "registerWithPassword";
 
   try {
-    logRequest(tag, { email });
+    logRequest(tag, payload);
 
     const res = await axios.post(
       "/api/auth/register",
-      { email, password },
+      payload,
       {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.NEXT_PUBLIC_INTERNAL_API_KEY!,
         },
-         withCredentials: true,
+        withCredentials: true,
       }
     );
 
     logResponse(tag, res.data);
     return res.data;
+
   } catch (error: any) {
     logError(tag, error);
     throw new Error(error.response?.data?.error || "Registration failed");
   }
 }
+
 
 // -------------------------------------------------------------
 // LOGIN WITH EMAIL/PASSWORD
