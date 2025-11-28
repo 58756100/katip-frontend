@@ -4,8 +4,8 @@ import GoogleProvider from "next-auth/providers/google";
 
 console.log("🔄 NextAuth route handler initialized");
 
-const url = process.env.NEXT_PUBLIC_URL;
-const social_login_endpoint = process.env.NEXT_PUBLIC_SOCIAL_LOGIN_ENDPOINT;
+const url = 'process.env.NEXT_PUBLIC_URL';
+const social_login_endpoint = "process.env.NEXT_PUBLIC_SOCIAL_LOGIN_ENDPOINT";
 
 if (!url || !social_login_endpoint) {
   console.error("❌ Missing required environment variables:");

@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import { SocialLoginButtons } from "../SocialLoginButtons";
-import type { AuthStep } from "./AuthContainer";
-import { useRouter } from 'next/navigation';
+import { AuthStep } from "./AuthStep";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { toast } from "sonner";
 import Logo from "../../../../public/logo.svg";
 
 import {
@@ -45,31 +46,45 @@ const LoginRegisterForm = ({
   };
 
   const handleContinue = async () => {
-    if (!email) return;
+    if (!email) {
+      toast.error("Email is required"); // Ensure we show an error if email is empty
+      return;
+    }
     setLoading(true);
     try {
+      // If emailExists is null, check if email exists in the system
       if (emailExists === null) {
         const result = await checkEmailExists(email);
-        setEmailExists(result.exists);
-
-        if (result.exists === false) {
-          await sendOtp(email);
-          setStep("REGISTER_OTP");
-          return;
-        }
-
-        if (result.exists === true) {
-          setStep("PASSWORD_LOGIN");
-          return;
+        if (!result) {
+          toast.error("Access denied. Email does not exist.");
+          setEmailExists(false);
+        } else {
+          setEmailExists(result.exists);
+          if (!result.exists) {
+            // If email does not exist, send OTP for registration
+            await sendOtp(email);
+            setStep("REGISTER_OTP");
+            return;
+          } else {
+            // If email exists, proceed to password login
+            setStep("PASSWORD_LOGIN");
+            return;
+          }
         }
       }
 
-      if (emailExists === true && showPasswordForm) {
-        if (!password) return;
+      // If email exists and password form is shown, handle password login
+      if (emailExists && showPasswordForm) {
+        if (!password) {
+          toast.error("Password is required");
+          return;
+        }
         await loginWithPassword(email, password);
         router.push("/c/dashboard");
         return;
       }
+    } catch (error) {
+      toast.error("ACCESS DENIED");
     } finally {
       setLoading(false);
     }
@@ -78,7 +93,7 @@ const LoginRegisterForm = ({
   return (
     <div className="space-y-6">
       <div className="flex justify-center">
-          <Image src={Logo} alt="Logo" width={100} height={100} />
+        <Image src={Logo} alt="Logo" width={100} height={100} />
       </div>
 
       <h2 className="text-center text-xl font-semibold">Login or Sign Up</h2>

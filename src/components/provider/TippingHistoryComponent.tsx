@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchProviderTransactions } from "@/utils/providerTransactionUtils";
 
 interface Tip {
   id: number;

@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Loader2,
-  RefreshCw,
-  Wallet,
-  ArrowRight,
-} from "lucide-react";
+import { Loader2, RefreshCw, Wallet, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+import { getProviderWalletBalance } from "@/utils/wallet";
 
 // Animated Counter
 function AnimatedNumber({ value }: { value: number }) {
@@ -47,17 +44,11 @@ export default function WalletCard() {
   const loadBalance = async () => {
     try {
       setLoading(true);
-      // Simulated API call - replace with actual getProviderWalletBalance()
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setBalanceMinor(125000); // Demo: KES 1,250.00
-      
-      if (typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast.success("Wallet updated");
-      }
+      const result = await getProviderWalletBalance();
+      setBalanceMinor(result.balanceMinor);
+      toast.success("Wallet updated");
     } catch (err: any) {
-      if (typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast.error(err.message || "Failed to fetch balance");
-      }
+      toast.error(err.message || "Failed to fetch balance");
     } finally {
       setLoading(false);
     }
@@ -152,7 +143,7 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
       name: "M-Pesa",
       icon: "📱",
       destination: "+254 758 756 100",
-      label: "Mobile Number"
+      label: "Mobile Number",
     },
     {
       id: "bank",
@@ -160,15 +151,15 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
       icon: "🏦",
       destination: "1234567890",
       accountName: "John Doe",
-      label: "Account Number"
+      label: "Account Number",
     },
     {
       id: "card",
       name: "Visa Card",
       icon: "💳",
       destination: "**** **** **** 4242",
-      label: "Card Number"
-    }
+      label: "Card Number",
+    },
   ];
 
   if (!isOpen) return null;
@@ -176,7 +167,8 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
   const withdrawalAmount = parseFloat(amount) || 0;
   const fee = withdrawalAmount * 0.01;
   const amountToReceive = withdrawalAmount - fee;
-  const isValidAmount = withdrawalAmount > 0 && withdrawalAmount <= availableBalance;
+  const isValidAmount =
+    withdrawalAmount > 0 && withdrawalAmount <= availableBalance;
   const hasError = amount !== "" && !isValidAmount;
 
   const handleAmountChange = (e: any) => {
@@ -189,17 +181,19 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
   const handleWithdraw = () => {
     if (!isValidAmount) return;
     setIsProcessing(true);
-    
+
     setTimeout(() => {
       setIsProcessing(false);
       onClose();
-      
-      if (typeof window !== 'undefined' && (window as any).toast) {
+
+      if (typeof window !== "undefined" && (window as any).toast) {
         (window as any).toast.success("Withdrawal Successful", {
-          description: `KES ${amountToReceive.toFixed(2)} will be sent to your ${selectedRail.name}`
+          description: `KES ${amountToReceive.toFixed(
+            2
+          )} will be sent to your ${selectedRail.name}`,
         });
       }
-      
+
       setAmount("");
       setSelectedRail(RAILS[0]);
     }, 1500);
@@ -215,7 +209,10 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
             </div>
             <h2 className="text-xl font-semibold">Withdraw Funds</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-full"
+          >
             ✕
           </button>
         </div>
@@ -223,20 +220,26 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
         <div className="p-6 space-y-6">
           <div className="p-4 bg-slate-50 rounded-xl border">
             <p className="text-sm text-slate-600 mb-1">Available Balance</p>
-            <p className="text-2xl font-bold">KES {availableBalance.toFixed(2)}</p>
+            <p className="text-2xl font-bold">
+              KES {availableBalance.toFixed(2)}
+            </p>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Withdrawal Amount</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-medium">KES</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-medium">
+                KES
+              </span>
               <input
                 type="text"
                 value={amount}
                 onChange={handleAmountChange}
                 placeholder="0.00"
                 className={`w-full pl-16 pr-20 py-4 text-lg font-semibold rounded-xl border-2 outline-none ${
-                  hasError ? "border-red-300 bg-red-50" : "border-slate-200 focus:border-primary"
+                  hasError
+                    ? "border-red-300 bg-red-50"
+                    : "border-slate-200 focus:border-primary"
                 }`}
               />
               <button
@@ -248,10 +251,16 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
             </div>
             {hasError && (
               <p className="text-red-600 text-sm">
-                {withdrawalAmount > availableBalance ? "Amount exceeds balance" : "Invalid amount"}
+                {withdrawalAmount > availableBalance
+                  ? "Amount exceeds balance"
+                  : "Invalid amount"}
               </p>
             )}
-            {isValidAmount && <p className="text-sm text-slate-600">Fee: KES {fee.toFixed(2)} (1%)</p>}
+            {isValidAmount && (
+              <p className="text-sm text-slate-600">
+                Fee: KES {fee.toFixed(2)} (1%)
+              </p>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -264,7 +273,9 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
                 <span className="text-2xl">{selectedRail.icon}</span>
                 <div className="text-left">
                   <p className="font-medium">{selectedRail.name}</p>
-                  <p className="text-sm text-slate-600">{selectedRail.destination}</p>
+                  <p className="text-sm text-slate-600">
+                    {selectedRail.destination}
+                  </p>
                 </div>
               </div>
               <span>▼</span>
@@ -284,7 +295,9 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
                     <span className="text-2xl">{rail.icon}</span>
                     <div className="text-left flex-1">
                       <p className="font-medium">{rail.name}</p>
-                      <p className="text-sm text-slate-600">{rail.destination}</p>
+                      <p className="text-sm text-slate-600">
+                        {rail.destination}
+                      </p>
                     </div>
                   </button>
                 ))}
@@ -292,19 +305,27 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
             )}
 
             <div className="p-4 bg-slate-50 rounded-xl border">
-              <p className="text-xs font-medium text-slate-600 mb-2">DESTINATION</p>
+              <p className="text-xs font-medium text-slate-600 mb-2">
+                DESTINATION
+              </p>
               <p className="text-sm font-medium">{selectedRail.name}</p>
-              <p className="text-sm text-slate-700">{selectedRail.destination}</p>
+              <p className="text-sm text-slate-700">
+                {selectedRail.destination}
+              </p>
             </div>
           </div>
 
           {isValidAmount && (
             <div className="p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border-2 border-primary/20">
-              <p className="text-xs font-semibold text-primary uppercase mb-3">Transaction Summary</p>
+              <p className="text-xs font-semibold text-primary uppercase mb-3">
+                Transaction Summary
+              </p>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Withdrawal Amount</span>
-                  <span className="font-medium">KES {withdrawalAmount.toFixed(2)}</span>
+                  <span className="font-medium">
+                    KES {withdrawalAmount.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Processing Fee (1%)</span>
@@ -313,7 +334,9 @@ function WithdrawalModal({ isOpen, onClose, availableBalance }: any) {
                 <div className="h-px bg-primary/20 my-2"></div>
                 <div className="flex justify-between">
                   <span className="font-semibold">You'll Receive</span>
-                  <span className="font-bold text-lg text-primary">KES {amountToReceive.toFixed(2)}</span>
+                  <span className="font-bold text-lg text-primary">
+                    KES {amountToReceive.toFixed(2)}
+                  </span>
                 </div>
               </div>
             </div>

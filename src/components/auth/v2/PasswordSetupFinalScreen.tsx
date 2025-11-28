@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -10,17 +10,31 @@ import { useRouter } from "next/navigation";
 import { passwordSchema } from "@/lib/validators/auth";
 import { registerWithPassword } from "@/utils/authUtils";
 
-const PasswordSetupFinalScreen = ({
-  email,
-  walletPin,
-  touchIdEnabled,
-  kycTier,
-}: {
+// ----------------------
+// PROPS TYPE
+// ----------------------
+interface PasswordSetupProps {
   email: string;
   walletPin: string;
   touchIdEnabled: boolean;
   kycTier: number | null;
-}) => {
+}
+
+// ----------------------
+// ERROR TYPE
+// ----------------------
+interface ErrorState {
+  password?: string;
+  confirmPassword?: string;
+  agreements?: string;
+}
+
+export default function PasswordSetupFinalScreen({
+  email,
+  walletPin,
+  touchIdEnabled,
+  kycTier,
+}: PasswordSetupProps) {
   const router = useRouter();
 
   const [password, setPassword] = useState("");
@@ -34,13 +48,11 @@ const PasswordSetupFinalScreen = ({
   const [agreeKyc, setAgreeKyc] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<ErrorState>({});
 
-  const [errors, setErrors] = useState<{
-    password?: string;
-    confirmPassword?: string;
-    agreements?: string;
-  }>({});
-
+  // ----------------------
+  // SUBMIT HANDLER
+  // ----------------------
   async function handleSubmit() {
     setErrors({});
 
@@ -71,7 +83,7 @@ const PasswordSetupFinalScreen = ({
       return;
     }
 
-    if (!kycTier) {
+    if (kycTier === null) {
       toast.error("KYC Tier missing. Please restart setup.");
       return;
     }
@@ -94,23 +106,25 @@ const PasswordSetupFinalScreen = ({
 
       console.log("FINAL PAYLOAD →", finalPayload);
 
-    await registerWithPassword(finalPayload);
-      router.replace("/c/dashboard");
+      await registerWithPassword(finalPayload);
 
       toast.success("Account created!");
       router.replace("/c/dashboard");
-    } catch (err: any) {
-      toast.error(err.message || "Registration failed");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Registration failed";
+      toast.error(message);
       router.replace("/login");
     } finally {
       setLoading(false);
     }
   }
+
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold text-center">Complete your registration</h1>
 
-      {/* Password Fields */}
+      {/* PASSWORD */}
       <div className="relative">
         <Input
           type={showPw ? "text" : "password"}
@@ -126,9 +140,12 @@ const PasswordSetupFinalScreen = ({
         >
           {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
-        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+        )}
       </div>
 
+      {/* CONFIRM PASSWORD */}
       <div className="relative">
         <Input
           type={showConfirmPw ? "text" : "password"}
@@ -149,10 +166,13 @@ const PasswordSetupFinalScreen = ({
         )}
       </div>
 
-      {/* Agreements */}
+      {/* AGREEMENTS */}
       <div className="space-y-3">
         <label className="flex items-center gap-3">
-          <Checkbox checked={agreeTerms} onCheckedChange={setAgreeTerms} />
+          <Checkbox
+            checked={agreeTerms}
+            onCheckedChange={(val) => setAgreeTerms(val === true)}
+          />
           <span>
             I agree to the{" "}
             <a href="/legal/terms" className="text-primary underline">
@@ -162,7 +182,10 @@ const PasswordSetupFinalScreen = ({
         </label>
 
         <label className="flex items-center gap-3">
-          <Checkbox checked={agreePrivacy} onCheckedChange={setAgreePrivacy} />
+          <Checkbox
+            checked={agreePrivacy}
+            onCheckedChange={(val) => setAgreePrivacy(val === true)}
+          />
           <span>
             I agree to the{" "}
             <a href="/legal/privacy" className="text-primary underline">
@@ -172,7 +195,10 @@ const PasswordSetupFinalScreen = ({
         </label>
 
         <label className="flex items-center gap-3">
-          <Checkbox checked={agreeKyc} onCheckedChange={setAgreeKyc} />
+          <Checkbox
+            checked={agreeKyc}
+            onCheckedChange={(val) => setAgreeKyc(val === true)}
+          />
           <span>I consent to KYC / AML checks</span>
         </label>
 
@@ -181,11 +207,10 @@ const PasswordSetupFinalScreen = ({
         )}
       </div>
 
+      {/* SUBMIT */}
       <Button className="w-full" disabled={loading} onClick={handleSubmit}>
         {loading ? <Loader2 className="animate-spin h-4 w-4" /> : "Complete Registration"}
       </Button>
     </div>
   );
-};
-
-export default PasswordSetupFinalScreen;
+}

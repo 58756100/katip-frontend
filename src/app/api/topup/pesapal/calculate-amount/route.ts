@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
-
+const BACKEND_BASE_URL = process.env.BACKEND_URL ;
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
     const backendResponse = await axios.post(
-      "http://localhost:5000/api/payments/calculate/topup",
+      `${BACKEND_BASE_URL}/api/payments/calculate/topup`,
       body,
       {
         withCredentials: true,

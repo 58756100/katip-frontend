@@ -1,32 +1,64 @@
 "use client";
- import axios from "axios";
 
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+// --------------------
+// TYPES
+// --------------------
+
+interface AdminUser {
+  id: string;
+  name?: string;
+  email: string;
+  roles: string[];
+  customerWalletMinor: number;
+  providerWalletMinor: number;
+  totalBalanceMinor: number;
+}
+
+interface SummaryData {
+  totalUsers: number;
+  totalProviders: number;
+  totalCustomers: number;
+  totalSystemBalanceMinor: number;
+}
+
+interface AdminUsersResponse {
+  users: AdminUser[];
+  summary: SummaryData;
+}
+
+// --------------------
+// COMPONENT
+// --------------------
+
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState([]);
-  const [summary, setSummary] = useState(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
 
+  const loadAdminUsers = async () => {
+    try {
+      const res = await axios.get<AdminUsersResponse>(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users`
+      );
 
+      setUsers(res.data.users);
+      setSummary(res.data.summary);
+    } catch (error) {
+      console.error("Failed to load admin users:", error);
+    }
+  };
 
-const loadAdminUsers = async () => {
-  try {
-    const res = await axios.get("http://localhost:5000/api/admin/users");
-    setUsers(res.data.users);
-    setSummary(res.data.summary);
-  } catch (error) {
-    console.error("Failed to load admin users:", error);
-  }
-};
-
-useEffect(() => {
-  loadAdminUsers();
-}, []);
+  useEffect(() => {
+    loadAdminUsers();
+  }, []);
 
   return (
     <div className="space-y-6">
+
       {/* SUMMARY CARDS */}
       {summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -79,8 +111,9 @@ useEffect(() => {
                   <tr key={u.id} className="border-b hover:bg-muted/40">
                     <td className="p-3 font-medium">{u.name || "(No name)"}</td>
                     <td className="p-3">{u.email}</td>
+
                     <td className="p-3">
-                      {u.roles.map(r => (
+                      {u.roles.map((r) => (
                         <Badge key={r} variant="outline" className="mr-1">
                           {r}
                         </Badge>
@@ -98,7 +131,6 @@ useEffect(() => {
                     <td className="p-3 font-bold">
                       {(u.totalBalanceMinor / 100).toLocaleString()} KSh
                     </td>
-
                   </tr>
                 ))}
               </tbody>
@@ -106,6 +138,7 @@ useEffect(() => {
           </div>
         </CardContent>
       </Card>
+
     </div>
   );
 }

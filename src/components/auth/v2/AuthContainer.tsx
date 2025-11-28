@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import LoginRegisterForm from "./LoginRegisterForm";
 import LoginOtpVerification from "./OtpCodeVerification";
 import RegistrationOtpVerification from "./RegistrationOtpVerification";
-import PasswordSetup from "./PasswordSetup";
 import CreateWalletPinScreen from "./CreateWalletPin";
 import KYCLimitScreen from "./KYCLimitsScreen";
 import PasswordSetupFinalScreen from "./PasswordSetupFinalScreen";
@@ -53,7 +52,7 @@ const AuthContainer = () => {
         <RegistrationOtpVerification email={email} setStep={setStep} />
       )}
 
-      {step === "PASSWORD_SETUP" && <PasswordSetup email={email} />}
+   
 
       {step === "CREATE_WALLET_PIN" && (
         <CreateWalletPinScreen
