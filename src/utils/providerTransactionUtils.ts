@@ -1,5 +1,5 @@
 import axios from "axios";
-
+const url = process.env.NEXT_PUBLIC_URL;
 export interface ProviderTransaction {
   transactionUID: string;
   payerId?: string;
@@ -18,7 +18,7 @@ export interface ProviderTransaction {
 
 export const fetchProviderTransactions = async (): Promise<ProviderTransaction[]> => {
   try {
-    const response = await axios.get("/api/wallet/transactions/provider", {
+    const response = await axios.get(`${url}/api/wallet/transactions/provider`, {
       withCredentials: true,
     });
     console.log( response.data.transactions)

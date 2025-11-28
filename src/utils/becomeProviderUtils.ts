@@ -1,6 +1,6 @@
 // src/utils/becomeProviderUtils.ts
 import axios, { AxiosError } from "axios";
-
+const url = process.env.NEXT_PUBLIC_URL;
 export interface BecomeProviderPayload {
   displayName: string;
   serviceCategory: string;
@@ -10,7 +10,7 @@ export interface BecomeProviderPayload {
 export async function submitBecomeProvider(payload: BecomeProviderPayload) {
   try {
     const res = await axios.post(
-      "/api/become-provider",
+      `${url}/api/become-provider`,
       payload,
       {
         withCredentials: true, // ensure cookies cross domains

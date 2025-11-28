@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { emailSchema, otpSchema, passwordSchema, loginSchema } from "@/lib/validators/auth";
+const url = process.env.NEXT_PUBLIC_URL;
 
 // Helper logger
 function logRequest(tag: string, data: any) {
@@ -24,14 +24,13 @@ function logError(tag: string, error: any) {
 // CHECK EMAIL
 // -------------------------------------------------------------
 export async function checkEmailExists(email: string) {
-  emailSchema.parse({ email });
   const tag = "checkEmailExists";
 
   try {
     logRequest(tag, { email });
 
     const res = await axios.post(
-      "/api/auth/check-email",
+      `${url}/api/auth/otp/send-otp`,
       { email },
       {
         headers: {
@@ -59,7 +58,7 @@ export async function sendOtp(email: string) {
     logRequest(tag, { email });
 
     const res = await axios.post(
-      "/api/auth/otp/send-otp",
+      `${url}/api/auth/otp/send-otp`,
       { email },
       {
         headers: {
@@ -81,14 +80,13 @@ export async function sendOtp(email: string) {
 // VERIFY OTP
 // -------------------------------------------------------------
 export async function verifyOtp(email: string, otp: string) {
-  otpSchema.parse({ email, otpCode: otp });
   const tag = "verifyOtp";
 
   try {
     logRequest(tag, { email, otp });
 
     const res = await axios.post(
-      "/api/auth/otp/verify",
+      `${url}/api/auth/otp/send-otp`,
       { email, otpCode: otp },
       {
         headers: {
@@ -127,7 +125,7 @@ export async function registerWithPassword(payload: {
     logRequest(tag, payload);
 
     const res = await axios.post(
-      "/api/auth/register",
+      `${url}/api/auth/otp/send-otp`,
       payload,
       {
         headers: {
@@ -147,20 +145,17 @@ export async function registerWithPassword(payload: {
   }
 }
 
-
 // -------------------------------------------------------------
 // LOGIN WITH EMAIL/PASSWORD
 // -------------------------------------------------------------
 export async function loginWithPassword(email: string, password: string) {
   const tag = "loginWithPassword";
 
-  loginSchema.parse({ email, password });
-
   try {
     logRequest(tag, { email });
 
     const res = await axios.post(
-      "/api/auth/login",
+      `${url}/api/auth/otp/send-otp`,
       { email, password },
       {
         headers: {

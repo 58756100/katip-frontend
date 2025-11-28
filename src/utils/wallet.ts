@@ -1,8 +1,8 @@
 import axios from "axios";
-
+const url = process.env.NEXT_PUBLIC_URL;
 export async function getCustomerWalletBalance() {
   try {
-    const response = await axios.get("/api/wallet/balance", {
+    const response = await axios.get(`${url}/api/wallet/balance`, {
       withCredentials: true,
       validateStatus: () => true,
     });
@@ -33,7 +33,7 @@ export async function getCustomerWalletBalance() {
 
 export async function getProviderWalletBalance() {
   try {
-    const response = await axios.get("/api/wallet/balance", {
+    const response = await axios.get(`${url}/api/wallet/balance`, {
       withCredentials: true,
       validateStatus: () => true,
     });

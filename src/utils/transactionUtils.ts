@@ -1,6 +1,6 @@
 // src/utils/walletUtils.ts
 import axios from "axios";
-
+const url = process.env.NEXT_PUBLIC_URL;
 export interface WalletTransaction {
   transactionUID: string;
   type: string;
@@ -17,7 +17,7 @@ export interface WalletTransaction {
 export async function fetchWalletTransactions(): Promise<WalletTransaction[]> {
   try {
     // Forward cookies from browser automatically
-    const response = await axios.get("/api/wallet/transactions/customer", {
+    const response = await axios.get(`${url}/api/wallet/transactions/customer`, {
       withCredentials: true,
     });
 

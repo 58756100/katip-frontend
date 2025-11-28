@@ -1,12 +1,13 @@
 import axios, { AxiosError } from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+const url = process.env.NEXT_PUBLIC_URL;
 // ----------------------
 // CALCULATE PESAPAL FEES
 // ----------------------
 export const calculatePesapalAmount = async (amount: number) => {
   const response = await axios.post(
-    "/api/topup/pesapal/calculate-amount",
+    `${url}/api/topup/pesapal/calculate-amount`,
     { amount },
     {
       withCredentials: true,
@@ -28,7 +29,7 @@ export const initiatePesapalTopup = async (payload: {
 }) => {
   try {
     const response = await axios.post(
-      "/api/topup/pesapal/initiate",
+      `${url}/api/topup/pesapal/initiate`,
       payload,
       {
         withCredentials: true,
@@ -276,7 +277,7 @@ export async function initiatePesapalPayment({
   note:String;
 }) {
   try {
-    const response = await fetch("/api/tip/pesapal/initiate", {
+    const response = await fetch(`${url}/api/tip/pesapal/initiate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
