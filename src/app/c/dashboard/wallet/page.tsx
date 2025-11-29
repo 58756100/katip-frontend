@@ -1,27 +1,24 @@
-"use client";
-
-import { useState } from "react";
+// src/app/c/dashboard/wallet/page.tsx
 import { WalletBalanceCard } from "@/components/customer/walletComponents/WalletBalanceCard";
 import { TopUpDialog } from "@/components/customer/walletComponents/TopUpComponents/TopUpModal";
 import { WalletHistoryTable } from "@/components/customer/walletComponents/WalletHistoryTable";
+import { verifySession } from "@/utils/auth";
+import TopUpClient from "./TopUpClient";
 
-const Page = () => {
-  // ✅ Modal state
-  const [topUpOpen, setTopUpOpen] = useState(false);
+const Page = async () => {
+  const user = await verifySession(["customer"]);
 
   return (
     <div className="space-y-6 p-4 md:p-8">
-      {/* 1️⃣ Wallet Balance */}
-      <WalletBalanceCard onTopUp={() => setTopUpOpen(true)} />
+     
 
-      {/* 2️⃣ Top Up Modal */}
-      <TopUpDialog open={topUpOpen} setOpen={setTopUpOpen} />
+      {/* 2️⃣ Top Up Modal + Button (client) */}
+      <TopUpClient />
 
       {/* 3️⃣ Transaction History Table */}
       <div className="pt-15">
-        <WalletHistoryTable />
+        <WalletHistoryTable  />
       </div>
-      
     </div>
   );
 };
