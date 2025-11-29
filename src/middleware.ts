@@ -25,26 +25,23 @@ function isUsernamePage(pathname: string) {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  // 🔒 Check lockdown mode
-  const lockdown = process.env.NEXT_PUBLIC_LOCKDOWN_MODE === "true";
-
   const accessToken = req.cookies.get("accessToken")?.value;
 
-  // Determine if route is public
   const isPublicRoute =
     PUBLIC_ROUTES.includes(pathname) || isUsernamePage(pathname);
 
-  // ✅ During lockdown: protect all routes
-  if (lockdown || !isPublicRoute) {
-    if (!accessToken) {
-      const redirectUrl = new URL("/login", req.url);
-      redirectUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
+  // allow public pages
+  if (isPublicRoute) {
+    return NextResponse.next();
   }
 
-  // Allow request if not in lockdown and public
+  // protected routes
+  if (!accessToken) {
+    const redirect = new URL("/login", req.url);
+    redirect.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(redirect);
+  }
+
   return NextResponse.next();
 }
 
