@@ -86,7 +86,7 @@ export async function verifyOtp(email: string, otp: string) {
     logRequest(tag, { email, otp });
 
     const res = await axios.post(
-      `${url}/api/auth/otp/send-otp`,
+      `${url}/api/auth/otp/verify`,
       { email, otpCode: otp },
       {
         headers: {
@@ -125,7 +125,7 @@ export async function registerWithPassword(payload: {
     logRequest(tag, payload);
 
     const res = await axios.post(
-      `${url}/api/auth/otp/send-otp`,
+      `${url}/api/auth/register`,
       payload,
       {
         headers: {
@@ -155,7 +155,7 @@ export async function loginWithPassword(email: string, password: string) {
     logRequest(tag, { email });
 
     const res = await axios.post(
-      `${url}/api/auth/otp/send-otp`,
+      `${url}/api/auth/login`,
       { email, password },
       {
         headers: {
