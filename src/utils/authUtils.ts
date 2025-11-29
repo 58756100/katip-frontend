@@ -173,3 +173,35 @@ export async function loginWithPassword(email: string, password: string) {
     throw new Error(error.response?.data?.error || "Login failed");
   }
 }
+
+
+// -------------------------------------------------------------
+// GET USER DETAILS
+// -------------------------------------------------------------
+export async function getUserDetails() {
+  const tag = "getUserDetails";
+
+  try {
+    logRequest(tag, "Fetching user details...");
+
+    const res = await axios.get(
+      `${url}/api/auth/user-details`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_INTERNAL_API_KEY!,
+        },
+        withCredentials: true, // REQUIRED to send cookies (accessToken)
+      }
+    );
+
+    logResponse(tag, res.data);
+    return res.data;
+
+  } catch (error: any) {
+    logError(tag, error);
+    throw new Error(
+      error.response?.data?.error || "Failed to load user details"
+    );
+  }
+}
