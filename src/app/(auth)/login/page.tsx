@@ -1,5 +1,9 @@
 import AuthContainer from "@/components/auth/v2/AuthContainer";
 
 export default function LoginPage() {
-  return <AuthContainer />;
+  return(
+    <div className="flex px-5">
+      <AuthContainer />
+    </div>
+  ) ;
 }
