@@ -11,7 +11,7 @@ export default function WalletPage() {
 
         <WalletCard />
       </div>
-      <div>
+      <div className="flex flex-col pt-10 w-full">
         <ProviderWalletTransactions />
       </div>
     </main>

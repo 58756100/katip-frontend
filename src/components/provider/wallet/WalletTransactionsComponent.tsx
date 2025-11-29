@@ -98,7 +98,7 @@ export const ProviderWalletTransactions: React.FC = () => {
   });
 
   return (
-    <div className="space-y-4">
+    <div className=" w-full px-5 space-y-4">
       {/* Search & Refresh */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <Input

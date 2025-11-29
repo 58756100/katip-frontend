@@ -1,54 +1,91 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchProviderTransactions } from "@/utils/providerTransactionUtils";
-
-interface Tip {
-  id: number;
-  tipper: string;
-  amount: number;
-  message?: string;
-  date: string;
-}
-
-const dummyTips: Tip[] = [
-  { id: 1, tipper: "Alice", amount: 500, message: "Keep up the great work!", date: "2025-11-27" },
-  { id: 2, tipper: "Bob", amount: 300, date: "2025-11-26" },
-  { id: 3, tipper: "Charlie", amount: 700, message: "Amazing build!", date: "2025-11-26" },
-  { id: 4, tipper: "Diana", amount: 250, date: "2025-11-25" },
-  { id: 5, tipper: "Evan", amount: 600, message: "Keep innovating!", date: "2025-11-25" },
-  { id: 6, tipper: "Fiona", amount: 400, date: "2025-11-24" },
-  { id: 7, tipper: "George", amount: 350, message: "You rock!", date: "2025-11-24" },
-  { id: 8, tipper: "Hannah", amount: 500, date: "2025-11-23" },
-  { id: 9, tipper: "Ian", amount: 450, message: "Awesome!", date: "2025-11-23" },
-  { id: 10, tipper: "Julia", amount: 300, date: "2025-11-22" },
-];
+import { fetchProviderTransactions, ProviderTransaction } from "@/utils/providerTransactionUtils";
+import { Loader2 } from "lucide-react";
 
 export default function TippingHistoryCard() {
+  const [tips, setTips] = useState<ProviderTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTips = async () => {
+      setLoading(true);
+      const data = await fetchProviderTransactions();
+      setLoading(false);
+      setTips(data || []);
+    };
+    loadTips();
+  }, []);
+
+  // Extract TIP transactions only
+  const recentTips = useMemo(() => {
+    return tips
+      .filter((tx) => tx.type === "TIP")
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 10);
+  }, [tips]);
+
   return (
-    <Card className="p-4 space-y-4 bg-white shadow-md rounded-lg">
+    <Card className="flex w-full p-4 bg-white dark:bg-gray-900 shadow-sm rounded-lg">
       <CardHeader>
-        <CardTitle>Latest Tips</CardTitle>
+        <CardTitle className="text-lg font-semibold">Latest Tips</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {dummyTips.map((tip) => (
-          <div
-            key={tip.id}
-            className="border-b last:border-b-0 pb-2 flex justify-between items-start"
-          >
-            <div>
-              <p className="font-semibold">{tip.tipper}</p>
-              {tip.message && (
-                <p className="text-sm text-gray-500 italic truncate max-w-xs">{tip.message}</p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="font-semibold text-green-600">KSh {tip.amount}</p>
-              <p className="text-xs text-gray-400">{tip.date}</p>
-            </div>
+
+      <CardContent className="space-y-4">
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center py-6">
+            <Loader2 className="animate-spin text-blue-500" size={28} />
           </div>
-        ))}
+        )}
+
+        {/* Empty State */}
+        {!loading && recentTips.length === 0 && (
+          <p className="text-center text-gray-500 py-4">
+            No tips received yet.
+          </p>
+        )}
+
+        {/* Render List */}
+        {!loading &&
+          recentTips.map((tip) => {
+            const message = tip.metadata?.note;
+            const payerName = tip.metadata?.payerName || "Anonymous";
+
+            // convert amountMinor → KES major
+            const amount = (tip.amountMinor / 100).toLocaleString();
+
+            return (
+              <div
+                key={tip.transactionUID}
+                className="border-b last:border-b-0 pb-3 flex justify-between items-start"
+              >
+                <div className="max-w-[70%]">
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">
+                    {payerName}
+                  </p>
+
+                  {message && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 italic line-clamp-1">
+                      {message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="text-right">
+                  <p className="font-semibold text-green-600 dark:text-green-400">
+                    KSh {amount}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(tip.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
       </CardContent>
     </Card>
   );

@@ -18,7 +18,10 @@ const Page = () => {
       <TopUpDialog open={topUpOpen} setOpen={setTopUpOpen} />
 
       {/* 3️⃣ Transaction History Table */}
-      <WalletHistoryTable />
+      <div className="pt-15">
+        <WalletHistoryTable />
+      </div>
+      
     </div>
   );
 };

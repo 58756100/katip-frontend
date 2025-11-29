@@ -62,7 +62,7 @@ export default function WalletCard() {
 
   return (
     <>
-      <div className="w-full max-w-lg mx-auto p-5 sm:p-6 rounded-2xl shadow-sm border bg-gradient-to-br from-white to-slate-50">
+      <div className="w-full  mx-auto p-5 sm:p-6 rounded-2xl shadow-sm border bg-gradient-to-br from-white to-slate-50">
         <div className="flex flex-row items-center justify-between pb-3">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-primary/10">

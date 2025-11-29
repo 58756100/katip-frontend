@@ -38,7 +38,7 @@ export function WalletBalanceCard({ onTopUp }: Props) {
     balanceMinor !== null ? balanceMinor / 100 : 0;
 
   return (
-    <Card className="bg-white dark:bg-gray-900 shadow-lg border rounded-xl p-4 sm:p-6 w-full max-w-lg mx-auto">
+    <Card className="bg-white dark:bg-gray-900 shadow-lg border rounded-xl p-4 sm:p-6 w-full ">
       <CardHeader className="flex flex-row items-center justify-between p-0 pb-4">
         <div className="flex items-center gap-3">
           <Wallet className="w-7 h-7 text-primary" />

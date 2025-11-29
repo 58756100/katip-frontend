@@ -38,7 +38,7 @@ export default function QRCodeCard({ username }: QRCodeCardProps) {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
+    <div className="flex flex-col w-full p-6 bg-white rounded-lg shadow-md space-y-4">
       <div className="flex justify-center">
         <Image src="/logo.svg" alt="Logo" width={100} height={100} />
       </div>

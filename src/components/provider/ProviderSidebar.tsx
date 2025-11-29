@@ -1,117 +1,156 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  Home, 
-  CreditCard, 
-  User, 
-  Settings, 
-  LogOut, 
-  ChevronLeft, 
+import {
+  Home,
+  CreditCard,
+  User,
+  Settings,
+  LogOut,
+  ChevronLeft,
   ChevronRight,
   Menu,
   X,
-  ArrowLeftRight
+  ArrowLeftRight,
 } from "lucide-react";
-import React from "react";
 import Image from "next/image";
 import Logo from "../../../public/logo.svg";
+import React from "react";
 
-interface SidebarItem {
-  name: string;
-  href: string;
-  icon: React.ReactNode;
-}
+// -----------------------
+// MEMOIZED CONSTANT DATA
+// -----------------------
 
-const providerSidebarItems: SidebarItem[] = [
-  { name: "Dashboard", href: "/p/dashboard", icon: <Home size={20} /> },
-  { name: "Wallet", href: "/p/dashboard/wallet", icon: <CreditCard size={20} /> },
-  { name: "Profile", href: "/p/dashboard/profile", icon: <User size={20} /> },
-  { name: "Settings", href: "/p/dashboard/settings", icon: <Settings size={20} /> },
-];
+const providerSidebarItems = Object.freeze([
+  { name: "Dashboard", href: "/p/dashboard", icon: Home },
+  { name: "Wallet", href: "/p/dashboard/wallet", icon: CreditCard },
+  { name: "Profile", href: "/p/dashboard/profile", icon: User },
+  { name: "Settings", href: "/p/dashboard/settings", icon: Settings },
+]);
 
-const ProviderSidebar = React.memo(() => {
-  const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+// -----------------------
+// PURE ITEM COMPONENT
+// -----------------------
+const SidebarItem = React.memo(function SidebarItem({
+  item,
+  isActive,
+  collapsed,
+}: {
+  item: any;
+  isActive: boolean;
+  collapsed: boolean;
+}) {
+  const Icon = item.icon;
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  return (
+    <Link
+      href={item.href}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+        isActive
+          ? "bg-blue-50 text-blue-600 font-medium dark:bg-blue-900/20 dark:text-blue-400"
+          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+      } ${collapsed ? "justify-center" : ""}`}
+      title={collapsed ? item.name : undefined}
+    >
+      <Icon size={20} className="shrink-0" />
+      {!collapsed && <span className="truncate">{item.name}</span>}
+    </Link>
+  );
+});
 
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [mobileOpen]);
-
-  const toggleMobileMenu = useCallback(() => {
-    setMobileOpen((prev) => !prev);
-  }, []);
-
-  const isActiveRoute = (itemHref: string) => {
-    if (itemHref === "/p/dashboard") {
-      return pathname === itemHref;
-    }
-    return pathname === itemHref || pathname.startsWith(itemHref + "/");
-  };
-
-  const SidebarNav = () => (
+// -----------------------
+// SIDEBAR NAV LIST
+// -----------------------
+const SidebarNav = React.memo(function SidebarNav({
+  collapsed,
+  activeChecker,
+}: {
+  collapsed: boolean;
+  activeChecker: (href: string) => boolean;
+}) {
+  return (
     <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-      {providerSidebarItems.map((item) => {
-        const isActive = isActiveRoute(item.href);
-        return (
-          <Link
-            key={item.name}
-            href={item.href}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-              isActive
-                ? "bg-blue-50 text-blue-600 font-medium dark:bg-blue-900/20 dark:text-blue-400"
-                : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-            }`}
-            title={collapsed ? item.name : undefined}
-          >
-            <span className="flex-shrink-0">{item.icon}</span>
-            {!collapsed && <span className="truncate">{item.name}</span>}
-          </Link>
-        );
-      })}
+      {providerSidebarItems.map((item) => (
+        <SidebarItem
+          key={item.href}
+          item={item}
+          isActive={activeChecker(item.href)}
+          collapsed={collapsed}
+        />
+      ))}
     </nav>
   );
+});
 
-  const SidebarFooter = () => (
+// -----------------------
+// FOOTER
+// -----------------------
+const SidebarFooter = React.memo(function SidebarFooter({
+  collapsed,
+}: {
+  collapsed: boolean;
+}) {
+  return (
     <div className="px-2 py-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
       <Link
         href="/c/dashboard"
         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all ${
           collapsed ? "justify-center" : ""
         }`}
-        title={collapsed ? "Go to Customer Dashboard" : undefined}
+        title={collapsed ? "Customer Dashboard" : undefined}
       >
-        <ArrowLeftRight size={20} className="flex-shrink-0" />
-        {!collapsed && <span className="truncate">Customer Dashboard</span>}
+        <ArrowLeftRight size={20} className="shrink-0" />
+        {!collapsed && <span>Customer Dashboard</span>}
       </Link>
-      <button 
+
+      <button
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-all ${
           collapsed ? "justify-center" : ""
         }`}
         title={collapsed ? "Logout" : undefined}
       >
-        <LogOut size={20} className="flex-shrink-0" />
+        <LogOut size={20} className="shrink-0" />
         {!collapsed && <span>Logout</span>}
       </button>
     </div>
   );
+});
 
+// -----------------------
+// MAIN SIDEBAR COMPONENT
+// -----------------------
+export default function ProviderSidebar() {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Track active route (stable)
+  const activeChecker = useCallback(
+    (href: string) => {
+      if (href === "/p/dashboard") return pathname === href;
+      return pathname.startsWith(href);
+    },
+    [pathname]
+  );
+
+  // Close mobile on route change
+  useEffect(() => setMobileOpen(false), [pathname]);
+
+  // Prevent body scroll on mobile drawer
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "unset";
+  }, [mobileOpen]);
+
+  const toggleMobileMenu = useCallback(
+    () => setMobileOpen((prev) => !prev),
+    []
+  );
+
+  // -----------------------
+  // RENDER
+  // -----------------------
   return (
     <>
       {/* Desktop Sidebar */}
@@ -120,22 +159,18 @@ const ProviderSidebar = React.memo(() => {
           collapsed ? "w-20" : "w-64"
         }`}
       >
-        {/* Logo + Collapse Button */}
-        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-          {!collapsed && (
-            <Image src={Logo} alt="Logo" width={100} height={100} />
-          )}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800">
+          {!collapsed && <Image src={Logo} alt="Logo" width={100} height={100} />}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ml-auto"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
         </div>
 
-        <SidebarNav />
-        <SidebarFooter />
+        <SidebarNav collapsed={collapsed} activeChecker={activeChecker} />
+        <SidebarFooter collapsed={collapsed} />
       </aside>
 
       {/* Mobile Header */}
@@ -143,47 +178,36 @@ const ProviderSidebar = React.memo(() => {
         <Image src={Logo} alt="Logo" width={100} height={100} />
         <button
           onClick={toggleMobileMenu}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label="Toggle menu"
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <Menu size={24} />
         </button>
       </div>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Drawer */}
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             onClick={toggleMobileMenu}
-            aria-hidden="true"
           />
 
-          {/* Mobile Drawer */}
-          <aside
-            className="fixed left-0 top-0 bottom-0 w-72 bg-white dark:bg-gray-900 shadow-2xl z-50 lg:hidden flex flex-col transform transition-transform duration-300"
-          >
-            {/* Mobile Header */}
-            <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+          <aside className="fixed left-0 top-0 bottom-0 w-72 bg-white dark:bg-gray-900 shadow-2xl z-50 flex flex-col transform transition-transform duration-300">
+            <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800">
               <Image src={Logo} alt="Logo" width={100} height={100} />
               <button
                 onClick={toggleMobileMenu}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Close menu"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <SidebarNav />
-            <SidebarFooter />
+            <SidebarNav collapsed={false} activeChecker={activeChecker} />
+            <SidebarFooter collapsed={false} />
           </aside>
         </>
       )}
     </>
   );
-});
-
-ProviderSidebar.displayName = "ProviderSidebar";
-
-export default ProviderSidebar;
+}

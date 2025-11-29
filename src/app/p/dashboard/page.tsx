@@ -18,11 +18,9 @@ const Page = () => {
         console.log("🟢 User Details Loaded:", res);
 
         // provider username lives inside: user.providerProfile.username
-        const extractedUsername =
-          res?.user?.providerProfile?.username || null;
+        const extractedUsername = res?.user?.providerProfile?.username || null;
 
         setUsername(extractedUsername);
-
       } catch (err) {
         console.error("❌ Failed to load user details:", err);
       }
@@ -32,19 +30,18 @@ const Page = () => {
   }, []);
 
   return (
-    <div>
-      <div>
+    <div className="flex flex-col">
+      <div className="">
         <WalletCard />
       </div>
+      <div className="flex flex-col md:flex-row w-full">
+        <div className="flex md:w-1/2 pt-10">
+          <QRCodeCard username={username ?? ""} />
+        </div>
 
-      <div>
-       
-
-        <QRCodeCard username={username ?? ""} />
-      </div>
-
-      <div>
-        <TippingHistory />
+        <div className="flex md:w-1/2 pt-10">
+          <TippingHistory />
+        </div>
       </div>
     </div>
   );
