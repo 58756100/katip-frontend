@@ -1,9 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Home, CreditCard, User, Settings, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { 
+  Home, 
+  CreditCard, 
+  User, 
+  Settings, 
+  LogOut, 
+  ChevronLeft, 
+  ChevronRight,
+  Menu,
+  X,
+  ArrowLeftRight
+} from "lucide-react";
+import React from "react";
+import Image from "next/image";
+import Logo from "../../../public/logo.svg";
 
 interface SidebarItem {
   name: string;
@@ -11,57 +25,165 @@ interface SidebarItem {
   icon: React.ReactNode;
 }
 
-const items: SidebarItem[] = [
-  { name: "Dashboard", href: "/p/dashboard", icon: <Home className="w-5 h-5" /> },
-  { name: "Wallet", href: "/p/dashboard/wallet", icon: <CreditCard className="w-5 h-5" /> },
-  { name: "Profile", href: "/p/dashboard/profile", icon: <User className="w-5 h-5" /> },
-  { name: "Settings", href: "/p/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
+const providerSidebarItems: SidebarItem[] = [
+  { name: "Dashboard", href: "/p/dashboard", icon: <Home size={20} /> },
+  { name: "Wallet", href: "/p/dashboard/wallet", icon: <CreditCard size={20} /> },
+  { name: "Profile", href: "/p/dashboard/profile", icon: <User size={20} /> },
+  { name: "Settings", href: "/p/dashboard/settings", icon: <Settings size={20} /> },
 ];
 
-export default function ProviderSidebar() {
+const ProviderSidebar = React.memo(() => {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all">
-      {/* Toggle Button */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-        {!collapsed && <h1 className="text-lg font-bold">Provider Dashboard</h1>}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1"
-        >
-          {collapsed ? "→" : "←"}
-        </Button>
-      </div>
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
-      {/* Sidebar Links */}
-      <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
-        {items.map((item) => (
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileOpen]);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileOpen((prev) => !prev);
+  }, []);
+
+  const isActiveRoute = (itemHref: string) => {
+    if (itemHref === "/p/dashboard") {
+      return pathname === itemHref;
+    }
+    return pathname === itemHref || pathname.startsWith(itemHref + "/");
+  };
+
+  const SidebarNav = () => (
+    <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+      {providerSidebarItems.map((item) => {
+        const isActive = isActiveRoute(item.href);
+        return (
           <Link
-            key={item.href}
+            key={item.name}
             href={item.href}
-            className={`flex items-center gap-3 p-2 rounded-md text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary ${
-              !collapsed ? "justify-start" : "justify-center"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+              isActive
+                ? "bg-blue-50 text-blue-600 font-medium dark:bg-blue-900/20 dark:text-blue-400"
+                : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             }`}
+            title={collapsed ? item.name : undefined}
           >
-            {item.icon}
-            {!collapsed && item.name}
+            <span className="flex-shrink-0">{item.icon}</span>
+            {!collapsed && <span className="truncate">{item.name}</span>}
           </Link>
-        ))}
-      </nav>
+        );
+      })}
+    </nav>
+  );
 
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-        <Button
-          variant="ghost"
-          className={`w-full flex items-center gap-3 justify-start ${collapsed && "justify-center"}`}
-        >
-          <LogOut className="w-5 h-5" />
-          {!collapsed && "Logout"}
-        </Button>
-      </div>
+  const SidebarFooter = () => (
+    <div className="px-2 py-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+      <Link
+        href="/c/dashboard"
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-all ${
+          collapsed ? "justify-center" : ""
+        }`}
+        title={collapsed ? "Go to Customer Dashboard" : undefined}
+      >
+        <ArrowLeftRight size={20} className="flex-shrink-0" />
+        {!collapsed && <span className="truncate">Customer Dashboard</span>}
+      </Link>
+      <button 
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-all ${
+          collapsed ? "justify-center" : ""
+        }`}
+        title={collapsed ? "Logout" : undefined}
+      >
+        <LogOut size={20} className="flex-shrink-0" />
+        {!collapsed && <span>Logout</span>}
+      </button>
     </div>
   );
-}
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside
+        className={`hidden lg:flex flex-col h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ${
+          collapsed ? "w-20" : "w-64"
+        }`}
+      >
+        {/* Logo + Collapse Button */}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+          {!collapsed && (
+            <Image src={Logo} alt="Logo" width={100} height={100} />
+          )}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ml-auto"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
+        </div>
+
+        <SidebarNav />
+        <SidebarFooter />
+      </aside>
+
+      {/* Mobile Header */}
+      <div className="lg:hidden flex items-center justify-between px-4 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 fixed top-0 left-0 right-0 z-40">
+        <Image src={Logo} alt="Logo" width={100} height={100} />
+        <button
+          onClick={toggleMobileMenu}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Toggle menu"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={toggleMobileMenu}
+            aria-hidden="true"
+          />
+
+          {/* Mobile Drawer */}
+          <aside
+            className="fixed left-0 top-0 bottom-0 w-72 bg-white dark:bg-gray-900 shadow-2xl z-50 lg:hidden flex flex-col transform transition-transform duration-300"
+          >
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+              <Image src={Logo} alt="Logo" width={100} height={100} />
+              <button
+                onClick={toggleMobileMenu}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Close menu"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <SidebarNav />
+            <SidebarFooter />
+          </aside>
+        </>
+      )}
+    </>
+  );
+});
+
+ProviderSidebar.displayName = "ProviderSidebar";
+
+export default ProviderSidebar;

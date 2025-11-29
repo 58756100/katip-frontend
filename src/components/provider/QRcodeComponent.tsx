@@ -13,7 +13,7 @@ interface QRCodeCardProps {
 
 export default function QRCodeCard({ username }: QRCodeCardProps) {
   const qrRef = useRef<HTMLCanvasElement>(null);
-  const link = `http://localhost:3000/${username}`;
+  const link = `${process.env.NEXT_PUBLIC_UR}/${username}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(link).then(() => {

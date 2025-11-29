@@ -7,8 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { SocialLoginButtons } from "../SocialLoginButtons";
 import { AuthStep } from "./AuthStep";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { toast } from "sonner";
+import Image from "next/image";
 import Logo from "../../../../public/logo.svg";
 
 import {

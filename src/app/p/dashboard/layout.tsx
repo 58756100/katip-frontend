@@ -1,4 +1,3 @@
-// c/dashboard/layout.tsx
 import React from "react";
 import ProviderSidebar from "@/components/provider/ProviderSidebar";
 
@@ -6,24 +5,17 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function ProviderDashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      {/* Sidebar */}
-      <aside className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 h-full">
-          <ProviderSidebar />
-        </div>
-      </aside>
-
-      {/* Mobile Sidebar placeholder */}
-      <div className="md:hidden">
-        {/* You can add a Drawer or Hamburger menu here for mobile */}
-      </div>
-
+    <div className="flex h-screen overflow-hidden">
+      <ProviderSidebar />
+      
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6">
-        {children}
+      <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+        {/* Add padding-top on mobile to account for fixed header */}
+        <div className="lg:p-6 p-4 pt-20 lg:pt-6">
+          {children}
+        </div>
       </main>
     </div>
   );
