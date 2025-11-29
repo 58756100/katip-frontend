@@ -11,13 +11,15 @@ const PUBLIC_ROUTES = [
   "/auth/otp/resend",
 ];
 
+// Detects pages like "/john" or "/mary"
 function isUsernamePage(pathname: string) {
   if (
     pathname.startsWith("/c/") ||
     pathname.startsWith("/p/") ||
     pathname.startsWith("/admin/") ||
     pathname.startsWith("/auth/")
-  ) return false;
+  )
+    return false;
 
   const parts = pathname.split("/").filter(Boolean);
   return parts.length === 1;
@@ -25,23 +27,35 @@ function isUsernamePage(pathname: string) {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
   const accessToken = req.cookies.get("accessToken")?.value;
 
+  // 1️⃣ Check lockdown mode
+  const lockdown = process.env.NEXT_PUBLIC_LOCKDOWN_MODE === "true";
+
+  // 2️⃣ Define public route logic
   const isPublicRoute =
     PUBLIC_ROUTES.includes(pathname) || isUsernamePage(pathname);
 
-  // allow public pages
-  if (isPublicRoute) {
+  // If NOT in lockdown → allow public routes normally
+  if (!lockdown && isPublicRoute) {
     return NextResponse.next();
   }
 
-  // protected routes
+  // 3️⃣ If route is login or unauthorized → NEVER redirect to avoid loops
+  if (pathname === "/login" || pathname === "/unauthorized") {
+    return NextResponse.next();
+  }
+
+  // 4️⃣ ALL routes must be protected in lockdown mode
+  // or protected routes when not in lockdown
   if (!accessToken) {
     const redirect = new URL("/login", req.url);
     redirect.searchParams.set("redirect", pathname);
     return NextResponse.redirect(redirect);
   }
 
+  // 5️⃣ Allow navigation
   return NextResponse.next();
 }
 
@@ -53,6 +67,63 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|api/).*)",
   ],
 };
+
+
+// import { NextResponse } from "next/server";
+// import type { NextRequest } from "next/server";
+
+// const PUBLIC_ROUTES = [
+//   "/",
+//   "/login",
+//   "/unauthorized",
+//   "/auth/register",
+//   "/auth/otp",
+//   "/auth/otp/verify",
+//   "/auth/otp/resend",
+// ];
+
+// function isUsernamePage(pathname: string) {
+//   if (
+//     pathname.startsWith("/c/") ||
+//     pathname.startsWith("/p/") ||
+//     pathname.startsWith("/admin/") ||
+//     pathname.startsWith("/auth/")
+//   ) return false;
+
+//   const parts = pathname.split("/").filter(Boolean);
+//   return parts.length === 1;
+// }
+
+// export function middleware(req: NextRequest) {
+//   const { pathname } = req.nextUrl;
+//   const accessToken = req.cookies.get("accessToken")?.value;
+
+//   const isPublicRoute =
+//     PUBLIC_ROUTES.includes(pathname) || isUsernamePage(pathname);
+
+//   // allow public pages
+//   if (isPublicRoute) {
+//     return NextResponse.next();
+//   }
+
+//   // protected routes
+//   if (!accessToken) {
+//     const redirect = new URL("/login", req.url);
+//     redirect.searchParams.set("redirect", pathname);
+//     return NextResponse.redirect(redirect);
+//   }
+
+//   return NextResponse.next();
+// }
+
+// export const config = {
+//   matcher: [
+//     "/c/dashboard/:path*",
+//     "/p/dashboard/:path*",
+//     "/admin/:path*",
+//     "/((?!_next/static|_next/image|favicon.ico|api/).*)",
+//   ],
+// };
 
 
 // import { NextResponse } from "next/server";
