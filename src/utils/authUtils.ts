@@ -30,7 +30,7 @@ export async function checkEmailExists(email: string) {
     logRequest(tag, { email });
 
     const res = await axios.post(
-      `${url}/api/auth/otp/send-otp`,
+      `${url}/api/auth/check-email`,
       { email },
       {
         headers: {
