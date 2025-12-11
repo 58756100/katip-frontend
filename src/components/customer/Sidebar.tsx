@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   ArrowLeftRight,
+  LayoutDashboard,
 } from "lucide-react";
 import React from "react";
 import Image from "next/image";
@@ -38,23 +39,53 @@ const CustomerSidebar = React.memo(({ user }: Props) => {
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "unset";
-    return () => { document.body.style.overflow = "unset"; };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [mobileOpen]);
 
-  const toggleMobileMenu = useCallback(() => setMobileOpen(prev => !prev), []);
+  const toggleMobileMenu = useCallback(
+    () => setMobileOpen((prev) => !prev),
+    []
+  );
 
   const customerSidebarItems: SidebarItem[] = useMemo(() => {
     const items: SidebarItem[] = [
-      { name: "Wallet", href: "/c/dashboard/wallet", icon: <CreditCard size={20} /> },
-      { name: "Tipping History", href: "/c/dashboard/tipping-history", icon: <Clock size={20} /> },
-      { name: "Wallet Tipping", href: "/c/dashboard/wallet-tip", icon: <Activity size={20} /> },
-      { name: "Become a Provider", href: "/c/dashboard/become-provider", icon: <Layers size={20} /> },
-      { name: "Profile", href: "/c/dashboard/profile", icon: <User size={20} /> },
+      {
+        name: "Home",
+        href: "/c/dashboard",
+        icon: <LayoutDashboard size={20} />,
+      },
+      {
+        name: "Wallet",
+        href: "/c/dashboard/wallet",
+        icon: <CreditCard size={20} />,
+      },
+      {
+        name: "Tipping History",
+        href: "/c/dashboard/tipping-history",
+        icon: <Clock size={20} />,
+      },
+      {
+        name: "Wallet Tipping",
+        href: "/c/dashboard/wallet-tip",
+        icon: <Activity size={20} />,
+      },
+      {
+        name: "Become a Provider",
+        href: "/c/dashboard/become-provider",
+        icon: <Layers size={20} />,
+      },
+      {
+        name: "Profile",
+        href: "/c/dashboard/profile",
+        icon: <User size={20} />,
+      },
     ];
 
     // ✅ Remove “Become a Provider” if user already has provider role
     if (user.roles.includes("provider")) {
-      return items.filter(item => item.name !== "Become a Provider");
+      return items.filter((item) => item.name !== "Become a Provider");
     }
 
     return items;
@@ -62,7 +93,17 @@ const CustomerSidebar = React.memo(({ user }: Props) => {
   const SidebarNav = () => (
     <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
       {customerSidebarItems.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+        let isActive = false;
+
+        if (item.href === "/c/dashboard") {
+          // Only active if exactly the dashboard root
+          isActive = pathname === item.href;
+        } else {
+          // Active if pathname starts with this route
+          isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+        }
+
         return (
           <Link
             key={item.name}
@@ -94,7 +135,7 @@ const CustomerSidebar = React.memo(({ user }: Props) => {
         <ArrowLeftRight size={20} className="flex-shrink-0" />
         {!collapsed && <span className="truncate">Provider Dashboard</span>}
       </Link>
-      <button 
+      <button
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-all ${
           collapsed ? "justify-center" : ""
         }`}
@@ -134,7 +175,7 @@ const CustomerSidebar = React.memo(({ user }: Props) => {
 
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between px-4 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 fixed top-0 left-0 right-0 z-40">
-       <Image src={Logo} alt="Logo" width={100} height={100} />
+        <Image src={Logo} alt="Logo" width={100} height={100} />
         <button
           onClick={toggleMobileMenu}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -154,12 +195,10 @@ const CustomerSidebar = React.memo(({ user }: Props) => {
           />
 
           {/* Mobile Drawer */}
-          <aside
-            className="fixed left-0 top-0 bottom-0 w-72 bg-white dark:bg-gray-900 shadow-2xl z-50 lg:hidden flex flex-col transform transition-transform duration-300"
-          >
+          <aside className="fixed left-0 top-0 bottom-0 w-72 bg-white dark:bg-gray-900 shadow-2xl z-50 lg:hidden flex flex-col transform transition-transform duration-300">
             {/* Mobile Header */}
             <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-             <Image src={Logo} alt="Logo" width={100} height={100} />
+              <Image src={Logo} alt="Logo" width={100} height={100} />
               <button
                 onClick={toggleMobileMenu}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
